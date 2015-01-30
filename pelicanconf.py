@@ -5,9 +5,10 @@ from __future__ import unicode_literals
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-AUTHOR = u'Mounir Messelmeni'
-SITENAME = u'Awesome notes'
+AUTHOR = 'Mounir Messelmeni'
+SITENAME = 'Awesome notes'
 SITEURL = ''
+SITESUBTITLE = 'We must learn to live together as brothers or perish together as fools. “Martin Luther King, Jr“'
 
 PATH = 'content'
 
@@ -22,12 +23,6 @@ TRANSLATION_FEED_ATOM = None
 AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
 
-# Blogroll
-LINKS = (('Pelican', 'http://getpelican.com/'),
-         ('Python.org', 'http://python.org/'),
-         ('Jinja2', 'http://jinja.pocoo.org/'),
-         ('You can modify those links in your config file', '#'),)
-
 # Social widget
 SOCIAL = (('You can add links in your config file', '#'),
           ('Another social link', '#'),)
@@ -37,11 +32,17 @@ DEFAULT_PAGINATION = 10
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True
 THEME = "pelican-octopress-theme"
-ARTICLE_URL = 'blog/{date:%Y}/{date:%m}/{date:%d}/{slug}/'
-ARTICLE_SAVE_AS = 'blog/{date:%Y}/{date:%m}/{date:%d}/{slug}/index.html'
+ARTICLE_URL = '{date:%Y}/{date:%m}/{date:%d}/{slug}/'
+ARTICLE_SAVE_AS = '{date:%Y}/{date:%m}/{date:%d}/{slug}/index.html'
 
 GITHUB_URL = 'http://github.com/MounirMesselmeni/'
 DISQUS_SITENAME = "mounir-blog"
+GOOGLE_ANALYTICS = "UA-42132208-1"
+
+
+SOCIAL = (
+    ('linkedin', 'http://tn.linkedin.com/pub/mounir-messelmeni/'),
+    ('github', 'http://github.com/MounirMesselmeni'),)
 
 PLUGIN_PATHS = [os.path.join(BASE_DIR, 'pelican-plugins')]
 PLUGINS = ["assets", "liquid_tags", "sitemap", "pelican_gist"]

@@ -5,76 +5,76 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>/</loc>
-<lastmod>2015-01-30T14:03:56-00:00</lastmod>
+<lastmod>2015-01-30T14:29:36-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/archives.html</loc>
-<lastmod>2015-01-30T14:03:56-00:00</lastmod>
+<lastmod>2015-01-30T14:29:36-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/tags.html</loc>
-<lastmod>2015-01-30T14:03:56-00:00</lastmod>
+<lastmod>2015-01-30T14:29:36-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/categories.html</loc>
-<lastmod>2015-01-30T14:03:56-00:00</lastmod>
+<lastmod>2015-01-30T14:29:36-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>/blog/2014/11/06/date-format-in-django-admin/</loc>
+<loc>/2014/11/06/date-format-in-django-admin/</loc>
 <lastmod>2014-11-06T14:04:00+01:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>/blog/2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/</loc>
+<loc>/2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/</loc>
 <lastmod>2013-12-03T00:49:00+01:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>/blog/2013/11/25/django-grouped-select-field-for-modelchoicefield-or-modelmultiplechoicefield/</loc>
+<loc>/2013/11/25/django-grouped-select-field-for-modelchoicefield-or-modelmultiplechoicefield/</loc>
 <lastmod>2013-11-25T11:08:00+01:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>/blog/2013/07/28/migrate-django-manytomany-field-to-manytomany-through-with-south/</loc>
+<loc>/2013/07/28/migrate-django-manytomany-field-to-manytomany-through-with-south/</loc>
 <lastmod>2013-07-28T02:30:00+02:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>/blog/2013/07/01/simple-angularjs-for-stackoverflow-api/</loc>
+<loc>/2013/07/01/simple-angularjs-for-stackoverflow-api/</loc>
 <lastmod>2013-07-01T00:30:00+02:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>/blog/2013/06/30/installing-sublime-text-3-on-fedora-19/</loc>
+<loc>/2013/06/30/installing-sublime-text-3-on-fedora-19/</loc>
 <lastmod>2013-06-30T16:03:00+02:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>/blog/2012/11/20/reading-csv-file-with-javascript-and-html5-file-api/</loc>
+<loc>/2012/11/20/reading-csv-file-with-javascript-and-html5-file-api/</loc>
 <lastmod>2012-11-20T20:43:00+01:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.5</priority>
