@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Installing Sublime Text 3 on Fedora 19 &mdash; Awesome notes</title>
+  <meta name="author" content="Mounir Messelmeni">
+
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <link href="/favicon.png" rel="icon">
+
+  <link href="/theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="/">Awesome notes</a></h1>
+    <h2>We must learn to live together as brothers or perish together as fools. “Martin Luther King, Jr“</h2>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+</ul>
+
+
+
+<ul class="main-navigation">
+    <li >
+    <a href="/category/linux.html">Linux</a>
+    </li>
+    <li class="active">
+    <a href="/category/web-development.html">Web development</a>
+    </li>
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Installing Sublime Text 3 on Fedora 19</h1>
+    <p class="meta">
+<time datetime="2013-06-30T16:03:00+02:00" pubdate>Sun 30 June 2013</time>    </p>
+</header>
+
+  <div class="entry-content"><p>keywords: sublime text, fedora, package control, sublime text shortcuts, install, sublimetext, sublimetext3, gnome, gnome 3, sublime text,&nbsp;shortcuts</p>
+<p>To install sublime text on Fedora 19 (16, 17 and 18), download this&nbsp;gist</p>
+<p><a href="http://www.sublimetext.com/blog/articles/sublime-text-3-public-beta">Sublime Text 3</a> Beta is now open to non-registered users. <a href="http://www.sublimetext.com/3">Download</a> the tarball (32 or 64&nbsp;bits).</p>
+<ul>
+<li>Go to your Downloads folder: <code>cd Downloads</code></li>
+<li>Download or copy this <span class="caps">GIST</span> in your Downloads&nbsp;folder.</li>
+<li>Execute this script by <code>chmod +x sublime3_fedora19.sh</code> and then <code>sudo ./sublime3_fedora19.sh sublime_text_3_build_3047_x64.tar.bz2</code>, <code>sublime_text_3_build_3047_x64.tar.bz2</code> is the downloaded tarball, change it if you download other&nbsp;version.</li>
+<li>Now your sublime text is installed and integrated to your gnome&nbsp;desktop.</li>
+</ul>
+<!-- more -->
+
+<div class="gist">
+    <script src='https://gist.github.com/5895264.js'></script>
+    <noscript>
+        <pre><code>#!/bin/sh
+ 
+SCRIPT="#!/bin/sh
+if [ \${1} == \"--help\" ]; then
+	/opt/sublime_text/sublime_text --help
+else
+	/opt/sublime_text/sublime_text
+fi
+"
+ 
+tar -xvjf "$1"
+sudo cp -fr "sublime_text_3/sublime_text.desktop" "/usr/share/applications/sublime_text.desktop"
+sudo sed -i 's/Icon=sublime-text/Icon=\/opt\/sublime_text\/Icon\/128x128\/sublime-text.png/g' /usr/share/applications/sublime_text.desktop
+sudo mv "sublime_text_3" "/opt/sublime_text"
+sudo echo "${SCRIPT}" > "/usr/bin/sublime_text"
+sudo chmod +x "/usr/bin/sublime_text"
+ 
+echo "Finish!"</code></pre>
+    </noscript>
+</div>
+<h2>Sublime Text 3 Package&nbsp;Control</h2>
+<p>To enable Package control in Sublime Text&nbsp;3:</p>
+<p>The simplest method of installation is through the Sublime Text console. The console is accessed via the <code>ctrl+</code> shortcut or the View &gt; Show Console menu. Once open, paste the following Python code for your version of Sublime Text into the&nbsp;console.</p>
+<p _="%" endcodeblock="endcodeblock">{% codeblock lang:python %}
+    import urllib.request,os; pf = &#8216;Package Control.sublime-package&#8217;; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); open(os.path.join(ipp, pf), &#8216;wb&#8217;).write(urllib.request.urlopen( &#8216;http://sublime.wbond.net/&#8217; + pf.replace(&#8216;&nbsp;&#8216;,&#8217;%20&#8217;)).read())</p>
+<p><a href="https://sublime.wbond.net/installation#st3">Source</a></p>
+<p><a href="https://sublime.wbond.net/browse">Here&#8217;s</a> the list plugins with compatibility&nbsp;indicator.</p>
+<h2>Sublime Text 3 Useful&nbsp;Shortcuts</h2>
+<div class="gist">
+    <script src='https://gist.github.com/5895595.js'></script>
+    <noscript>
+        <pre><code>h2. General
+
+| *Ctrl+KB* | toggle side bar |
+| *Ctrl+Shift+P* | command prompt |
+| *Ctrl+`* | python console |
+| *Ctrl+N* | new file |
+
+h2. Editing
+
+| *Ctrl+L* | select line (repeat select next lines) |
+| *Ctrl+D* | select word (repeat select others occurrences in context for multiple editing) |
+| *Ctrl+Shift+M* | select content into brackets |
+| *Ctrl+X* | delete line |
+| *Ctrl+KK* | delete from cursor to end of line |
+| *Ctrl+K+Backspace* | delete from cursor to start of line |
+| *Ctrl+Shift+D* | duplicate line(s) |
+| *Ctrl+J* | join lines |
+| *Ctrl+KU* | upper case |
+| *Ctrl+KL* | lower case |
+| *Ctrl+ /* | comment |
+| *Ctrl+Shift+/* | block comment |
+| *Ctrl+Y* | redo or repeat |
+| *Ctrl+Shift+V* | past and ident |
+| *Alt+/* | autocomplete (repeat to select next suggestion). Default is Ctrl+Space, but it always reserved for language change in Chinese Windows environment. |
+
+| *Ctrl+M* | jump to matching brackets |
+| *Ctrl+U* | soft undo (movement undo) |
+
+h2. Navigation/Goto Anywhere
+
+| *Ctrl+P* | goto anyway. Search files by name in your project.  |
+| *Ctrl+R* | goto symbol(functions and classes) in the file. Same as *Ctrl+P*, then type *@*|
+| *Ctrl+;* | goto word in current file. Same as *Ctrl+P*, then type *#*|
+| *Ctrl+G* | goto line in current file. Same as *Ctrl+P*, then type *:*|
+
+h2. Find/Replace
+
+| *Ctrl+F* | find |
+| *Ctrl+H* | replace |
+| *Ctrl+Shift+F* | find in files |
+
+h2. Splits/Tabs
+
+| *Alt+Shift+1* | single column |
+| *Alt+Shift+2* | two columns |
+| *Alt+Shift+5* | grid (4 groups) |
+| *Ctrl+[1,2,3,4]* | focus group |
+| *Ctrl+Shift+[1,2,3,4]* | move file to group |
+| *Ctrl+[1,2,3...]* | select tab |
+
+h2. Bookmarks
+
+| *Ctrl+F2* | toggle bookmark |
+| *F2* | next bookmark |
+| *Shift+F2* | previous bookmark |
+| *Ctrl+Shift+F2* | clear bookmarks |
+</code></pre>
+    </noscript>
+</div></div>
+	<script type="text/javascript">
+	  var disqus_shortname = 'mounir-blog';
+          var disqus_identifier = '/blog/2013/06/30/installing-sublime-text-3-on-fedora-19/';
+          var disqus_url = '/blog/2013/06/30/installing-sublime-text-3-on-fedora-19/';
+          var disqus_title = 'Installing Sublime Text 3 on Fedora&nbsp;19';
+	  (function() {
+	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	   })();
+	</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">
+        Mounir Messelmeni
+    </span>
+  </span>
+<time datetime="2013-06-30T16:03:00+02:00" pubdate>Sun 30 June 2013</time>  <span class="categories">
+    <a class='category' href='/category/web-development.html'>Web Development</a>
+  </span>
+  <span class="categories">
+    <a class="category" href="/tag/sublime-text.html">Sublime Text</a>,    <a class="category" href="/tag/fedora.html">Fedora</a>  </span>
+</p><div class="sharing">
+</div>    </footer>
+  </article>
+
+</div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="/blog/2014/11/06/date-format-in-django-admin/">Date Format in Django Admin</a>
+      </li>
+      <li class="post">
+          <a href="/blog/2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/">Install vsftpd on Linux and configure nginx as webserver</a>
+      </li>
+      <li class="post">
+          <a href="/blog/2013/11/25/django-grouped-select-field-for-modelchoicefield-or-modelmultiplechoicefield/">Django grouped select field for ModelChoiceField or ModelMultipleChoiceField</a>
+      </li>
+      <li class="post">
+          <a href="/blog/2013/07/28/migrate-django-manytomany-field-to-manytomany-through-with-south/">Migrate Django ManyToMany field to ManyToMany through with South</a>
+      </li>
+      <li class="post">
+          <a href="/blog/2013/07/01/simple-angularjs-for-stackoverflow-api/">Simple AngularJS for Stackoverflow API</a>
+      </li>
+    </ul>
+  </section>
+  <section>
+      
+    <h1>Categories</h1>
+    <ul id="recent_posts">
+        <li><a href="/category/linux.html">Linux</a></li>
+        <li><a href="/category/web-development.html">Web Development</a></li>
+    </ul>
+  </section>
+ 
+
+  <section>
+  <h1>Tags</h1>
+    <a href="/tag/stackoverflow-api.html">Stackoverflow API</a>,    <a href="/tag/html5.html">html5]</a>,    <a href="/tag/csv.html">csv</a>,    <a href="/tag/fedora.html">Fedora</a>,    <a href="/tag/django-admin.html">Django Admin</a>,    <a href="/tag/python.html">Python</a>,    <a href="/tag/javascript.html">[javascript</a>,    <a href="/tag/angularjs.html">AngularJS</a>,    <a href="/tag/django.html">Django</a>,    <a href="/tag/custom-fields.html">Custom Fields</a>,    <a href="/tag/migration.html">Migration</a>,    <a href="/tag/nginx.html">Nginx</a>,    <a href="/tag/linux.html">Linux</a>,    <a href="/tag/sublime-text.html">Sublime Text</a>,    <a href="/tag/south.html">South</a>,    <a href="/tag/fileapi.html">fileapi</a>  </section>
+
+
+    <section>
+        <h1>Social</h1>
+        <ul>
+            <li><a href="#" target="_blank">You can add links in your config file</a></li>
+            <li><a href="#" target="_blank">Another social link</a></li>
+        </ul>
+    </section>
+    <section>
+        <h1>Blogroll</h1>
+        <ul>
+            <li><a href="http://getpelican.com/" target="_blank">Pelican</a></li>
+            <li><a href="http://python.org/" target="_blank">Python.org</a></li>
+            <li><a href="http://jinja.pocoo.org/" target="_blank">Jinja2</a></li>
+            <li><a href="#" target="_blank">You can modify those links in your config file</a></li>
+        </ul>
+    </section>
+
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+    Copyright &copy;  2012&ndash;2014  Mounir Messelmeni &mdash;
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+  <script src="/theme/js/modernizr-2.0.js"></script>
+  <script src="/theme/js/ender.js"></script>
+  <script src="/theme/js/octopress.js" type="text/javascript"></script>
+	<script type="text/javascript">
+	  var disqus_shortname = 'mounir-blog';
+          var disqus_identifier = '/blog/2013/06/30/installing-sublime-text-3-on-fedora-19/';
+          var disqus_url = '/blog/2013/06/30/installing-sublime-text-3-on-fedora-19/';
+          var disqus_title = 'Installing Sublime Text 3 on Fedora&nbsp;19';
+	  (function() {
+	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	   })();
+	</script>
+</body>
+</html>

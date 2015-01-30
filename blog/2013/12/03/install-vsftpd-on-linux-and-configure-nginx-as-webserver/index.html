@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Install vsftpd on Linux and configure nginx as webserver &mdash; Awesome notes</title>
+  <meta name="author" content="Mounir Messelmeni">
+
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <link href="/favicon.png" rel="icon">
+
+  <link href="/theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="/">Awesome notes</a></h1>
+    <h2>We must learn to live together as brothers or perish together as fools. “Martin Luther King, Jr“</h2>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+</ul>
+
+
+
+<ul class="main-navigation">
+    <li class="active">
+    <a href="/category/linux.html">Linux</a>
+    </li>
+    <li >
+    <a href="/category/web-development.html">Web development</a>
+    </li>
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Install vsftpd on Linux and configure nginx as webserver</h1>
+    <p class="meta">
+<time datetime="2013-12-03T00:49:00+01:00" pubdate>Tue 03 December 2013</time>    </p>
+</header>
+
+  <div class="entry-content"><p>keywords: Linux, Fedora, redhat, amazon linux, amazon linux ami, vsftp, vsftpd, nginx, web server, ftp, html, debian, ubuntu, amazon, aws, ec2,&nbsp;ami</p>
+<p>In this tutorial we will create an <span class="caps">FTP</span> server in Redhat based distribution(Fedora, CentOS, Amazon Linux <span class="caps">AMI</span>, Redhat), this tutorial also can be applied for others distibution like Ubuntu or Debian, just change some configuration file location and some commands&nbsp;syntax.</p>
+<p>We will install <a href="https://security.appspot.com/vsftpd.html"><span class="caps">VSFTPD</span></a> and <a href="http://nginx.com/">Nginx</a> to dispose uploaded data via <span class="caps">FTP</span> with&nbsp;Nginx.</p>
+<!-- more -->
+
+<h3><span class="caps">VSFTPD</span>&nbsp;Installation</h3>
+<p>First of all, let&#8217;s install vsftpd, an awesome <span class="caps">FTP</span> server very simple to&nbsp;use.</p>
+<div class="highlight"><pre>    sudo yum install vsftpd
+</pre></div>
+
+
+<p>Then, let&#8217;s copy this configuration into <code>/etc/vsftpd/vsftpd.conf</code></p>
+<div class="highlight"><pre>    <span class="nv">anonymous_enable</span><span class="o">=</span>NO
+    <span class="nv">local_enable</span><span class="o">=</span>YES
+    <span class="nv">write_enable</span><span class="o">=</span>YES
+    <span class="nv">local_umask</span><span class="o">=</span>022
+    <span class="nv">dirmessage_enable</span><span class="o">=</span>YES
+    <span class="nv">xferlog_enable</span><span class="o">=</span>YES
+    <span class="nv">connect_from_port_20</span><span class="o">=</span>NO
+    <span class="nv">xferlog_file</span><span class="o">=</span>/var/log/vsftpd/vsftpd.log
+    <span class="nv">xferlog_std_format</span><span class="o">=</span>YES
+    <span class="nv">ftpd_banner</span><span class="o">=</span>Welcome to FTP service
+    <span class="nv">chroot_local_user</span><span class="o">=</span>YES
+    <span class="nv">listen</span><span class="o">=</span>YES
+    <span class="nv">pam_service_name</span><span class="o">=</span>vsftpd
+    <span class="nv">tcp_wrappers</span><span class="o">=</span>YES
+    <span class="nv">userlist_file</span><span class="o">=</span>/etc/vsftpd/vsftpd.userlist
+    <span class="nv">userlist_enable</span><span class="o">=</span>YES
+    <span class="nv">userlist_deny</span><span class="o">=</span>NO
+    <span class="nv">pasv_max_port</span><span class="o">=</span>51000
+    <span class="nv">pasv_min_port</span><span class="o">=</span>50000
+    <span class="nv">port_enable</span><span class="o">=</span>YES
+    <span class="nv">pasv_enable</span><span class="o">=</span>YES
+    <span class="nv">pasv_address</span><span class="o">=</span>YOUR_SERVER_URL
+    <span class="nv">pasv_addr_resolve</span><span class="o">=</span>YES
+    <span class="nv">check_shell</span><span class="o">=</span>NO
+    <span class="nv">passwd_chroot_enable</span><span class="o">=</span>YES
+</pre></div>
+
+
+<p>As you see, in this configuration we had edited this&nbsp;settings:</p>
+<ul>
+<li>Disabling anonymous connections: <code>anonymous_enable=NO</code></li>
+<li>Creating a custom log folder: <code>/var/log/vsftpd/vsftpd.log</code></li>
+<li>Activating the custom log: <code>xferlog_std_format=YES</code></li>
+<li>Adding a custom welcome message to our <span class="caps">FTP</span> Server: <code>ftpd_banner=Welcome to FTP service</code></li>
+<li>Enabling local users: <code>userlist_enable=YES</code></li>
+<li>Specifying users list: <code>userlist_file=/etc/vsftpd/vsftpd.userlist</code></li>
+<li>Enabling users list: <code>userlist_enable=YES</code></li>
+<li>Specifying users list as authorized list: <code>userlist_deny=NO</code></li>
+<li>The ftpuser should be able to write data: <code>write_enable=YES</code></li>
+<li>Set umask to 022 to make sure that all the files (644) and folders (755) you upload get the proper permissions: <code>local_umask=022</code></li>
+<li>Configure vsftpd to use ports 50000-51000 for passive data&nbsp;transfers</li>
+<li>Change <code>YOUR_SERVER_URL</code> with the <span class="caps">IP</span> or domain name server, if you use <span class="caps">IP</span> you can change <code>pasv_addr_resolve</code> to <code>NO</code></li>
+</ul>
+<p>Next, we should create the folder where data should be, make this folder the home directory of the ftp user we will create. And define a password for this&nbsp;user.</p>
+<div class="highlight"><pre>    sudo mkdir -p /var/log/vsftpd/
+    sudo mkdir -p /var/www/ftp
+    sudo useradd -d /var/www/ftp/ -s /sbin/nologin ftp_user
+    sudo passwd ftp_user
+</pre></div>
+
+
+<p>Now, we add this user in the authorized users list, create a group named ftpusers and affect it to the ftp_user and make ftp_user own the ftp&nbsp;directory.</p>
+<div class="highlight"><pre>    sudo <span class="nb">echo</span> <span class="s2">&quot;ftp_user&quot;</span> &gt; /etc/vsftpd/vsftpd.userlist
+    sudo groupadd ftpusers
+    sudo usermod -G ftpusers ftp_user
+    sudo chown ftp_user /var/www/ftp/ -R
+</pre></div>
+
+
+<p>Our Vsftpd server need to be restarted, we can also add it to start on boot with <code>chkconfig</code>, just update your firewall configuration to add the port 21/tcp and port range&nbsp;50000-51000/tcp.</p>
+<div class="highlight"><pre>    sudo chkconfig vsftpd on
+    sudo service vsftpd restart
+</pre></div>
+
+
+<p>You can test your server with ftp command or FileZilla&nbsp;client.</p>
+<h3>Nginx&nbsp;Installation</h3>
+<p>Let&#8217;s install and configure Nginx to dispose our uploaded <span class="caps">FTP</span> data (<span class="caps">HTML</span>, Images,&nbsp;&#8230;).</p>
+<div class="highlight"><pre>    sudo yum install vsftpd
+    sudo chkconfig nginx --add
+    sudo chkconfig nginx on --level 235
+</pre></div>
+
+
+<p>Now, copy the following configuration into <code>/etc/nginx/conf.d/ftp.conf</code> and start nginx service <code>sudo service nginx start</code></p>
+<div class="highlight"><pre>    <span class="k">server</span> <span class="p">{</span>
+      <span class="kn">listen</span>        <span class="mi">80</span><span class="p">;</span>
+      <span class="kn">server_name</span>   <span class="s">domain</span><span class="p">;</span>
+
+      <span class="kn">location</span> <span class="s">/</span><span class="p">{</span>
+        <span class="kn">autoindex</span> <span class="no">on</span><span class="p">;</span>
+        <span class="kn">root</span>  <span class="s">/var/www/ftp/</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<p>Finally, don&#8217;t forget to add port 80 rule to your firewall&nbsp;configuration.</p>
+<p>That&#8217;s all&nbsp;!</p></div>
+	<script type="text/javascript">
+	  var disqus_shortname = 'mounir-blog';
+          var disqus_identifier = '/blog/2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/';
+          var disqus_url = '/blog/2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/';
+          var disqus_title = 'Install vsftpd on Linux and configure nginx as&nbsp;webserver';
+	  (function() {
+	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	   })();
+	</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">
+        Mounir Messelmeni
+    </span>
+  </span>
+<time datetime="2013-12-03T00:49:00+01:00" pubdate>Tue 03 December 2013</time>  <span class="categories">
+    <a class='category' href='/category/linux.html'>Linux</a>
+  </span>
+  <span class="categories">
+    <a class="category" href="/tag/linux.html">Linux</a>,    <a class="category" href="/tag/nginx.html">Nginx</a>  </span>
+</p><div class="sharing">
+</div>    </footer>
+  </article>
+
+</div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="/blog/2014/11/06/date-format-in-django-admin/">Date Format in Django Admin</a>
+      </li>
+      <li class="post">
+          <a href="/blog/2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/">Install vsftpd on Linux and configure nginx as webserver</a>
+      </li>
+      <li class="post">
+          <a href="/blog/2013/11/25/django-grouped-select-field-for-modelchoicefield-or-modelmultiplechoicefield/">Django grouped select field for ModelChoiceField or ModelMultipleChoiceField</a>
+      </li>
+      <li class="post">
+          <a href="/blog/2013/07/28/migrate-django-manytomany-field-to-manytomany-through-with-south/">Migrate Django ManyToMany field to ManyToMany through with South</a>
+      </li>
+      <li class="post">
+          <a href="/blog/2013/07/01/simple-angularjs-for-stackoverflow-api/">Simple AngularJS for Stackoverflow API</a>
+      </li>
+    </ul>
+  </section>
+  <section>
+      
+    <h1>Categories</h1>
+    <ul id="recent_posts">
+        <li><a href="/category/linux.html">Linux</a></li>
+        <li><a href="/category/web-development.html">Web Development</a></li>
+    </ul>
+  </section>
+ 
+
+  <section>
+  <h1>Tags</h1>
+    <a href="/tag/stackoverflow-api.html">Stackoverflow API</a>,    <a href="/tag/html5.html">html5]</a>,    <a href="/tag/csv.html">csv</a>,    <a href="/tag/fedora.html">Fedora</a>,    <a href="/tag/django-admin.html">Django Admin</a>,    <a href="/tag/python.html">Python</a>,    <a href="/tag/javascript.html">[javascript</a>,    <a href="/tag/angularjs.html">AngularJS</a>,    <a href="/tag/django.html">Django</a>,    <a href="/tag/custom-fields.html">Custom Fields</a>,    <a href="/tag/migration.html">Migration</a>,    <a href="/tag/nginx.html">Nginx</a>,    <a href="/tag/linux.html">Linux</a>,    <a href="/tag/sublime-text.html">Sublime Text</a>,    <a href="/tag/south.html">South</a>,    <a href="/tag/fileapi.html">fileapi</a>  </section>
+
+
+    <section>
+        <h1>Social</h1>
+        <ul>
+            <li><a href="#" target="_blank">You can add links in your config file</a></li>
+            <li><a href="#" target="_blank">Another social link</a></li>
+        </ul>
+    </section>
+    <section>
+        <h1>Blogroll</h1>
+        <ul>
+            <li><a href="http://getpelican.com/" target="_blank">Pelican</a></li>
+            <li><a href="http://python.org/" target="_blank">Python.org</a></li>
+            <li><a href="http://jinja.pocoo.org/" target="_blank">Jinja2</a></li>
+            <li><a href="#" target="_blank">You can modify those links in your config file</a></li>
+        </ul>
+    </section>
+
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+    Copyright &copy;  2012&ndash;2014  Mounir Messelmeni &mdash;
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+  <script src="/theme/js/modernizr-2.0.js"></script>
+  <script src="/theme/js/ender.js"></script>
+  <script src="/theme/js/octopress.js" type="text/javascript"></script>
+	<script type="text/javascript">
+	  var disqus_shortname = 'mounir-blog';
+          var disqus_identifier = '/blog/2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/';
+          var disqus_url = '/blog/2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/';
+          var disqus_title = 'Install vsftpd on Linux and configure nginx as&nbsp;webserver';
+	  (function() {
+	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	   })();
+	</script>
+</body>
+</html>
