@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 AUTHOR = 'Mounir Messelmeni'
 SITENAME = 'Awesome notes'
-SITEURL = ''
+SITEURL = 'http://mounirmesselmeni.github.io'
 SITESUBTITLE = 'We must learn to live together as brothers or perish together as fools. “Martin Luther King, Jr“'
 
 PATH = 'content'
