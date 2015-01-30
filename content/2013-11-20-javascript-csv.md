@@ -1,6 +1,6 @@
 Title:Reading CSV File With Javascript and HTML5 File API
 Date:2012-11-20 20:43
-Tags: [javascript,csv,fileapi,html5]
+Tags: javascript,csv,fileapi,html5
 Category: Web Development
 Summary: How to read a file via html5 and javascript, using modern browsers to instantly view and parse data in client side.
 
