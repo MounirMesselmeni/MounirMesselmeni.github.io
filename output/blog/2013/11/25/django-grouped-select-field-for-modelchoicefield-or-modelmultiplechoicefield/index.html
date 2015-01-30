@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Django grouped select field for ModelChoiceField or ModelMultipleChoiceField &mdash; Awesome notes</title>
+  <meta name="author" content="Mounir Messelmeni">
+
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <link href="/favicon.png" rel="icon">
+
+  <link href="/theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="/">Awesome notes</a></h1>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+</ul>
+
+
+
+<ul class="main-navigation">
+    <li >
+    <a href="/category/linux.html">Linux</a>
+    </li>
+    <li class="active">
+    <a href="/category/web-development.html">Web development</a>
+    </li>
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Django grouped select field for ModelChoiceField or ModelMultipleChoiceField</h1>
+    <p class="meta">
+<time datetime="2013-11-25T11:08:00+01:00" pubdate>Mon 25 November 2013</time>    </p>
+</header>
+
+  <div class="entry-content"><p>keywords: django, select, grouped, custom fields, ModelChoiceField, ModelMultipleChoiceField, grouped select, groupe choices, choices,&nbsp;field</p>
+<p>Django forms&#8217;s builtin fields like ChoiceField, ModelChoiceField use by default <code>forms.Select</code> widget, but what we do if we need a Select with grouped&nbsp;options.</p>
+<p>I found this awesome <a href="https://djangosnippets.org/snippets/1968/">snippets</a> that&#8217;s helped me to achieve this, just in my case I needed to add a line of code to show only options with&nbsp;parent.</p>
+<!-- more -->
+
+<h2>Example</h2>
+<p>Here&#8217;s a model&nbsp;example:</p>
+<div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Category</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;self&#39;</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s">u&#39;{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+
+
+<p>I created a form that use this&nbsp;model:</p>
+<div class="highlight"><pre>    <span class="k">class</span> <span class="nc">ExampleForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+
+        <span class="n">category</span> <span class="o">=</span> <span class="n">GroupedModelChoiceField</span><span class="p">(</span>
+            <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Category&#39;</span><span class="p">),</span>
+            <span class="n">group_by_field</span><span class="o">=</span><span class="s">&#39;parent&#39;</span><span class="p">,</span>
+            <span class="n">queryset</span><span class="o">=</span><span class="n">Category</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span>
+        <span class="p">)</span>
+</pre></div>
+
+
+<p>The snippet show categories with None label, I don&#8217;t need to make user able to select Categories, only childs can be selected. So, I just edited the line 50 of the snippet to remove group&nbsp;categories.</p>
+<div class="highlight"><pre>    <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">groupby</span>
+
+    <span class="kn">from</span> <span class="nn">django.forms.models</span> <span class="kn">import</span> <span class="n">ModelChoiceIterator</span><span class="p">,</span> <span class="n">ModelChoiceField</span>
+
+
+    <span class="k">class</span> <span class="nc">GroupedModelChoiceField</span><span class="p">(</span><span class="n">ModelChoiceField</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group_by_field</span><span class="p">,</span> <span class="n">group_label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            group_by_field is the name of a field on the model</span>
+<span class="sd">            group_label is a function to return a label for each choice group</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">GroupedModelChoiceField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">group_by_field</span> <span class="o">=</span> <span class="n">group_by_field</span>
+            <span class="k">if</span> <span class="n">group_label</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">group_label</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group</span><span class="p">:</span> <span class="n">group</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">group_label</span> <span class="o">=</span> <span class="n">group_label</span>
+
+        <span class="k">def</span> <span class="nf">_get_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Exactly as per ModelChoiceField except returns new iterator class</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_choices&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_choices</span>
+            <span class="k">return</span> <span class="n">GroupedModelChoiceIterator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">choices</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_get_choices</span><span class="p">,</span> <span class="n">ModelChoiceField</span><span class="o">.</span><span class="n">_set_choices</span><span class="p">)</span>
+
+
+    <span class="k">class</span> <span class="nc">GroupedModelChoiceIterator</span><span class="p">(</span><span class="n">ModelChoiceIterator</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">empty_label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="p">(</span><span class="s">u&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">empty_label</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">cache_choices</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">choice_cache</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">choice_cache</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">group_label</span><span class="p">(</span><span class="n">group</span><span class="p">),</span> <span class="p">[</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span> <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">])</span>
+                        <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">choices</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span>
+                            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">group_by_field</span><span class="p">))</span>
+                    <span class="p">]</span>
+                <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">choice_cache</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">choice</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">choices</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span>
+                        <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span>
+                            <span class="n">row</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">group_by_field</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="n">group</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span> <span class="c">#Line added</span>
+                        <span class="k">yield</span> <span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">group_label</span><span class="p">(</span><span class="n">group</span><span class="p">),</span>
+                            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span> <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">])</span>
+</pre></div>
+
+
+<p>Okay, now this custom field work, but what if I need a grouped select multiple with <code>ModelMultipleChoiceField</code> ?</p>
+<p>We can just add a new field like <code>GroupedModelChoiceField</code> that inherits from <code>ModelMultipleChoiceField</code></p>
+<div class="highlight"><pre>    <span class="kn">from</span> <span class="nn">django.forms.models</span> <span class="kn">import</span> <span class="n">ModelMultipleChoiceField</span>
+
+
+    <span class="k">class</span> <span class="nc">GroupedMultipleModelChoiceField</span><span class="p">(</span><span class="n">ModelMultipleChoiceField</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group_by_field</span><span class="p">,</span> <span class="n">group_label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            group_by_field is the name of a field on the model</span>
+<span class="sd">            group_label is a function to return a label for each choice group</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">GroupedMultipleModelChoiceField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">group_by_field</span> <span class="o">=</span> <span class="n">group_by_field</span>
+            <span class="k">if</span> <span class="n">group_label</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">group_label</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group</span><span class="p">:</span> <span class="n">group</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">group_label</span> <span class="o">=</span> <span class="n">group_label</span>
+
+        <span class="k">def</span> <span class="nf">_get_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Exactly as per ModelChoiceField except returns new iterator class</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_choices&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_choices</span>
+            <span class="k">return</span> <span class="n">GroupedModelChoiceIterator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">choices</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_get_choices</span><span class="p">,</span> <span class="n">ModelMultipleChoiceField</span><span class="o">.</span><span class="n">_set_choices</span><span class="p">)</span>
+</pre></div></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">
+        Mounir Messelmeni
+    </span>
+  </span>
+<time datetime="2013-11-25T11:08:00+01:00" pubdate>Mon 25 November 2013</time>  <span class="categories">
+    <a class='category' href='/category/web-development.html'>Web Development</a>
+  </span>
+  <span class="categories">
+    <a class="category" href="/tag/django.html">Django</a>,    <a class="category" href="/tag/python.html">Python</a>,    <a class="category" href="/tag/custom-fields.html">Custom Fields</a>  </span>
+</p><div class="sharing">
+</div>    </footer>
+  </article>
+
+</div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="/blog/2014/11/06/date-format-in-django-admin/">Date Format in Django Admin</a>
+      </li>
+      <li class="post">
+          <a href="/blog/2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/">Install vsftpd on Linux and configure nginx as webserver</a>
+      </li>
+      <li class="post">
+          <a href="/blog/2013/11/25/django-grouped-select-field-for-modelchoicefield-or-modelmultiplechoicefield/">Django grouped select field for ModelChoiceField or ModelMultipleChoiceField</a>
+      </li>
+      <li class="post">
+          <a href="/blog/2013/07/28/migrate-django-manytomany-field-to-manytomany-through-with-south/">Migrate Django ManyToMany field to ManyToMany through with South</a>
+      </li>
+      <li class="post">
+          <a href="/blog/2013/07/01/simple-angularjs-for-stackoverflow-api/">Simple AngularJS for Stackoverflow API</a>
+      </li>
+    </ul>
+  </section>
+  <section>
+      
+    <h1>Categories</h1>
+    <ul id="recent_posts">
+        <li><a href="/category/linux.html">Linux</a></li>
+        <li><a href="/category/web-development.html">Web Development</a></li>
+    </ul>
+  </section>
+ 
+
+  <section>
+  <h1>Tags</h1>
+    <a href="/tag/stackoverflow-api.html">Stackoverflow API</a>,    <a href="/tag/html5.html">html5]</a>,    <a href="/tag/csv.html">csv</a>,    <a href="/tag/fedora.html">Fedora</a>,    <a href="/tag/django-admin.html">Django Admin</a>,    <a href="/tag/python.html">Python</a>,    <a href="/tag/javascript.html">[javascript</a>,    <a href="/tag/angularjs.html">AngularJS</a>,    <a href="/tag/django.html">Django</a>,    <a href="/tag/custom-fields.html">Custom Fields</a>,    <a href="/tag/migration.html">Migration</a>,    <a href="/tag/nginx.html">Nginx</a>,    <a href="/tag/linux.html">Linux</a>,    <a href="/tag/sublime-text.html">Sublime Text</a>,    <a href="/tag/south.html">South</a>,    <a href="/tag/fileapi.html">fileapi</a>  </section>
+
+
+    <section>
+        <h1>Social</h1>
+        <ul>
+            <li><a href="#" target="_blank">You can add links in your config file</a></li>
+            <li><a href="#" target="_blank">Another social link</a></li>
+        </ul>
+    </section>
+    <section>
+        <h1>Blogroll</h1>
+        <ul>
+            <li><a href="http://getpelican.com/" target="_blank">Pelican</a></li>
+            <li><a href="http://python.org/" target="_blank">Python.org</a></li>
+            <li><a href="http://jinja.pocoo.org/" target="_blank">Jinja2</a></li>
+            <li><a href="#" target="_blank">You can modify those links in your config file</a></li>
+        </ul>
+    </section>
+
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+    Copyright &copy;  2012&ndash;2014  Mounir Messelmeni &mdash;
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+  <script src="/theme/js/modernizr-2.0.js"></script>
+  <script src="/theme/js/ender.js"></script>
+  <script src="/theme/js/octopress.js" type="text/javascript"></script>
+	<script type="text/javascript">
+	  var disqus_shortname = 'mounir-blog';
+          var disqus_identifier = '/blog/2013/11/25/django-grouped-select-field-for-modelchoicefield-or-modelmultiplechoicefield/';
+          var disqus_url = '/blog/2013/11/25/django-grouped-select-field-for-modelchoicefield-or-modelmultiplechoicefield/';
+          var disqus_title = 'Django grouped select field for ModelChoiceField or&nbsp;ModelMultipleChoiceField';
+	  (function() {
+	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	   })();
+	</script>
+</body>
+</html>
