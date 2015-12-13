@@ -3,8 +3,16 @@ Date:2013-11-25 11:08
 Tags: Django, Python, Custom Fields
 Category: Web Development
 Summary: create django grouped select field for ModelChoiceField or ModelMultipleChoiceField
-
-keywords: django, select, grouped, custom fields, ModelChoiceField, ModelMultipleChoiceField, grouped select, groupe choices, choices, field
+Keywords: django
+          select
+          grouped
+          custom fields
+          ModelChoiceField
+          ModelMultipleChoiceField
+          grouped select
+          groupe choices
+          choices
+          field
 
 Django forms's builtin fields like ChoiceField, ModelChoiceField use by default `forms.Select` widget, but what we do if we need a Select with grouped options.
 

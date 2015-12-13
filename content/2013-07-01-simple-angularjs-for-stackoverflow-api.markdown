@@ -3,6 +3,9 @@ Date: 2013-07-01 00:30
 Tags: javascript, AngularJS, Stackoverflow API
 Category: Web Development
 Summary: How to build a simple Angularjs application for Satckoverflow api
+Keywords: javascript
+          AngularJS
+          Stackoverflow API
 
 
 ##Angular JS

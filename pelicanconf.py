@@ -12,7 +12,7 @@ SITESUBTITLE = 'We must learn to live together as brothers or perish together as
 
 PATH = 'content'
 
-TIMEZONE = 'Europe/Paris'
+TIMEZONE = 'Europe/Berlin'
 
 DEFAULT_LANG = u'en'
 
@@ -22,10 +22,6 @@ CATEGORY_FEED_ATOM = None
 TRANSLATION_FEED_ATOM = None
 AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
-
-# Social widget
-SOCIAL = (('You can add links in your config file', '#'),
-          ('Another social link', '#'),)
 
 DEFAULT_PAGINATION = 10
 
@@ -41,8 +37,8 @@ GOOGLE_ANALYTICS = "UA-42132208-1"
 
 
 SOCIAL = (
-    ('linkedin', 'http://tn.linkedin.com/pub/mounir-messelmeni/'),
-    ('github', 'http://github.com/MounirMesselmeni'),)
+    ('Linkedin', 'https://de.linkedin.com/in/mounirmesselmeni'),
+    ('Github', 'http://github.com/MounirMesselmeni'),)
 
 PLUGIN_PATHS = [os.path.join(BASE_DIR, 'pelican-plugins')]
 PLUGINS = ["assets", "liquid_tags", "sitemap", "pelican_gist"]

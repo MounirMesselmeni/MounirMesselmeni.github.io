@@ -3,8 +3,16 @@ Date: 2013-06-30 16:03
 Category: Web Development
 Tags: Sublime Text,Fedora
 Summary: install sublime text on Fedora 19, install package control, useful shortcuts
-
-keywords: sublime text, fedora, package control, sublime text shortcuts, install, sublimetext, sublimetext3, gnome, gnome 3, sublime text, shortcuts
+Keywords: sublime text
+          fedora
+          package control
+          sublime text shortcuts
+          install
+          sublimetext
+          sublimetext3
+          gnome
+          gnome 3
+          shortcuts
 
 To install sublime text on Fedora 19 (16, 17 and 18), download this gist
 

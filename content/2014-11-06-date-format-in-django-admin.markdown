@@ -3,8 +3,19 @@ Date: 2014-11-06 14:04
 Category: Web Development
 Tags: Django, Python, Django Admin
 Summary: Django Admin list_display custom date time format and default locale settings overriding
-
-keywords: python, django, django admin, date format, settings, date, datetime, internalization, i18n, i10n, list_display, local, django.conf.locale
+Keywords: python
+          django
+          django admin
+          date format
+          settings
+          date
+          datetime
+          internalization
+          i18n
+          i10n
+          list_display
+          local
+          django.conf.locale
 
 
 Recently I was working on a Django project where I wanted a different date time format other than the default one when English language is active in the Admin `list_display`.

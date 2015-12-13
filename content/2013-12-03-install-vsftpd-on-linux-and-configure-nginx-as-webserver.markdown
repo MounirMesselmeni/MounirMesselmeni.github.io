@@ -3,8 +3,23 @@ Date: 2013-12-03 00:49
 Tags: Linux, Nginx
 Category: Linux
 Summary: How to install an ftp server on linux using Vsftpd and dispose uploaded content on the web via nginx. Using a redhat based distribution like fedora, centos, amazon linux ami, redhat or others ditribution like debian, ubuntu, ...
-
-keywords: Linux, Fedora, redhat, amazon linux, amazon linux ami, vsftp, vsftpd, nginx, web server, ftp, html, debian, ubuntu, amazon, aws, ec2, ami
+Keywords: Linux
+          Fedora
+          redhat
+          amazon linux
+          amazon linux ami
+          vsftp
+          vsftpd
+          nginx
+          web server
+          ftp
+          html
+          debian
+          ubuntu
+          amazon
+          aws
+          ec2
+          ami
 
 In this tutorial we will create an FTP server in Redhat based distribution(Fedora, CentOS, Amazon Linux AMI, Redhat), this tutorial also can be applied for others distibution like Ubuntu or Debian, just change some configuration file location and some commands syntax.
 
