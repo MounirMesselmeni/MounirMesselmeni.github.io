@@ -6,8 +6,24 @@
   <meta charset="utf-8">
   <meta name="author" content="Mounir Messelmeni">
 
-        <title>Authors &mdash; Awesome notes</title>
+          <title>How to order a calculated count field in Django’s admin &mdash; Awesome notes</title>
         <meta charset="utf-8" />
+
+    <meta name="keywords" content="python" />
+    <meta name="keywords" content="django" />
+    <meta name="keywords" content="admin" />
+    <meta name="keywords" content="django admin" />
+    <meta name="keywords" content="order" />
+    <meta name="keywords" content="ordering" />
+    <meta name="keywords" content="count" />
+    <meta name="keywords" content="annotate" />
+    <meta name="keywords" content="queryset" />
+    <meta name="keywords" content="modeladmin" />
+
+
+    <meta name="tags" content="Django" />
+    <meta name="tags" content="Python" />
+    <meta name="tags" content="Django Admin" />
 
 
   <!-- http://t.co/dKP3o1e -->
@@ -41,20 +57,71 @@
     <li >
     <a href="http://mounirmesselmeni.github.io/category/linux.html">Linux</a>
     </li>
-    <li >
+    <li class="active">
     <a href="http://mounirmesselmeni.github.io/category/web-development.html">Web development</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
 <div>
-	<article role="article">
-    	<header>
-    		<h1 class="entry-title">Blog Authors</h1>
-    	</header>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">How to order a calculated count field in Django’s admin</h1>
+    <p class="meta">
+<time datetime="2016-03-21T23:28:00+01:00" pubdate>Mon 21 March 2016</time>    </p>
+</header>
 
-		<p><a href="http://mounirmesselmeni.github.io/author/mounir-messelmeni.html">Mounir Messelmeni</a> (10)</p>
-	</article>
+  <div class="entry-content"><p>You can easily add a field which count a specific related model from a reverse <code>ForeignKey</code> relation or 
+a <code>ManyToMany</code> relation, but ordering this field could not be easy from the first&nbsp;time.</p>
+<p>Here we will see how to use annotate to add this field and how to order it. You only have to define <code>admin_order_field</code>
+as in the&nbsp;following.</p>
+<p>A basic models example <code>models.py</code>:</p>
+<div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Teacher</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Student</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
+        <span class="n">teacher</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Teacher</span><span class="p">)</span>
+</pre></div>
+
+
+<p>And the <code>admin.py</code></p>
+<div class="highlight"><pre>    <span class="nd">@admin.register</span><span class="p">(</span><span class="n">Teacher</span><span class="p">)</span>
+    <span class="k">class</span> <span class="nc">TeacherAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+        <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s">&#39;id&#39;</span><span class="p">,</span>
+            <span class="s">&#39;students_count&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Teacher</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">students_count</span><span class="o">=</span><span class="n">Count</span><span class="p">(</span><span class="s">&#39;student&#39;</span><span class="p">))</span>
+
+        <span class="k">def</span> <span class="nf">students_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">students_count</span>
+
+        <span class="n">students_count</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Students count&#39;</span><span class="p">)</span>
+        <span class="n">students_count</span><span class="o">.</span><span class="n">admin_order_field</span> <span class="o">=</span> <span class="s">&#39;students_count&#39;</span>
+</pre></div></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">
+        Mounir Messelmeni
+    </span>
+  </span>
+<time datetime="2016-03-21T23:28:00+01:00" pubdate>Mon 21 March 2016</time>  <span class="categories">
+    <a class='category' href='http://mounirmesselmeni.github.io/category/web-development.html'>Web Development</a>
+  </span>
+  <span class="categories">
+    <a class="category" href="http://mounirmesselmeni.github.io/tag/django.html">Django</a>,    <a class="category" href="http://mounirmesselmeni.github.io/tag/python.html">Python</a>,    <a class="category" href="http://mounirmesselmeni.github.io/tag/django-admin.html">Django Admin</a>  </span>
+</p><div class="sharing">
+</div>    </footer>
+  </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
+  </section>
 </div>
 <aside class="sidebar">
   <section>
@@ -129,6 +196,9 @@
 </script>
 	<script type="text/javascript">
 	  var disqus_shortname = 'mounir-blog';
+          var disqus_identifier = '/2016/03/21/how-to-order-a-calculated-count-field-in-djangos-admin/';
+          var disqus_url = 'http://mounirmesselmeni.github.io/2016/03/21/how-to-order-a-calculated-count-field-in-djangos-admin/';
+          var disqus_title = 'How to order a calculated count field in Django&#8217;s&nbsp;admin';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

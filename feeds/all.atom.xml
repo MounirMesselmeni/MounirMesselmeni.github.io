@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Awesome notes</title><link href="http://mounirmesselmeni.github.io/" rel="alternate"></link><link href="http://mounirmesselmeni.github.io/feeds/all.atom.xml" rel="self"></link><id>http://mounirmesselmeni.github.io/</id><updated>2016-03-21T23:28:00+01:00</updated><entry><title>How to order a calculated count field in Django’s admin</title><link href="http://mounirmesselmeni.github.io/2016/03/21/how-to-order-a-calculated-count-field-in-djangos-admin/" rel="alternate"></link><updated>2016-03-21T23:28:00+01:00</updated><author><name>Mounir Messelmeni</name></author><id>tag:mounirmesselmeni.github.io,2016-03-21:2016/03/21/how-to-order-a-calculated-count-field-in-djangos-admin/</id><summary type="html">&lt;p&gt;You can easily add a field which count a specific related model from a reverse &lt;code&gt;ForeignKey&lt;/code&gt; relation or 
+a &lt;code&gt;ManyToMany&lt;/code&gt; relation, but ordering this field could not be easy from the first&amp;nbsp;time.&lt;/p&gt;
+&lt;p&gt;Here we will see how to use annotate to add this field and how to order it. You only have to define &lt;code&gt;admin_order_field&lt;/code&gt;
+as in the&amp;nbsp;following.&lt;/p&gt;
+&lt;p&gt;A basic models example &lt;code&gt;models.py&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Teacher&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CharField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;255&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Student&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CharField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;255&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;teacher&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ForeignKey&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Teacher&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;And the &lt;code&gt;admin.py&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="nd"&gt;@admin.register&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Teacher&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;TeacherAdmin&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;admin&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ModelAdmin&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;list_display&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;students_count&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_queryset&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;Teacher&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;objects&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;annotate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;students_count&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;Count&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;students_count&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;obj&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;students_count&lt;/span&gt;
+
+        &lt;span class="n"&gt;students_count&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;short_description&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;_&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Students count&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;students_count&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;admin_order_field&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;students_count&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</summary><category term="Django"></category><category term="Python"></category><category term="Django Admin"></category></entry><entry><title>Installing and using Sentry on your Django projects</title><link href="http://mounirmesselmeni.github.io/2016/03/21/installing-and-using-sentry-on-your-django-projects/" rel="alternate"></link><updated>2016-03-21T23:28:00+01:00</updated><author><name>Mounir Messelmeni</name></author><id>tag:mounirmesselmeni.github.io,2016-03-21:2016/03/21/installing-and-using-sentry-on-your-django-projects/</id><summary type="html">&lt;p&gt;&lt;a href="https://www.getsentry.com"&gt;Sentry&lt;/a&gt; is a very known, stable and powerful logging tool built with Django, which enable
+an easy management for your application&amp;nbsp;logging.&lt;/p&gt;
+&lt;p&gt;If you&amp;#8217;re a Django developer it&amp;#8217;s really
+simple to use and will add a lot of benefits. Including organized logs supporting notifications
+by email, to your hipchat room&amp;nbsp;&amp;#8230;&lt;/p&gt;
+&lt;p&gt;You can use the hosted version of Sentry or install it on your own server. On this tutorial
+we will install. Oh sorry, I think I have nothing to add on how to install it, just check &lt;a href="https://docs.getsentry.com/on-premise/server/installation/"&gt;the official Sentry
+documentation&lt;/a&gt; where you will find a simple and clear instruction on how to do&amp;nbsp;this.&lt;/p&gt;
+&lt;p&gt;I will just suggest some useful staff to use on&amp;nbsp;production:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;If you are familiar with Docker and would like to use it, you can check &lt;a href="https://hub.docker.com/_/sentry/"&gt;this docker image for Sentry&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Run sentry-worker without -B, which mean running Celery beat, instead run it on another process, you can achieve
+that with another supervisor&amp;nbsp;config.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="o"&gt;[&lt;/span&gt;program:sentry-cron&lt;span class="o"&gt;]&lt;/span&gt;
+    &lt;span class="nv"&gt;directory&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/www/sentry/
+    &lt;span class="nb"&gt;command&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/www/sentry/bin/sentry celery beat
+    &lt;span class="nv"&gt;autostart&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nb"&gt;true&lt;/span&gt;
+&lt;span class="nb"&gt;    &lt;/span&gt;&lt;span class="nv"&gt;autorestart&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nb"&gt;true&lt;/span&gt;
+&lt;span class="nb"&gt;    &lt;/span&gt;&lt;span class="nv"&gt;redirect_stderr&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nb"&gt;true&lt;/span&gt;
+&lt;span class="nb"&gt;    &lt;/span&gt;&lt;span class="nv"&gt;killasgroup&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nb"&gt;true&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;Install and use &lt;a href="https://www.rabbitmq.com/download.html"&gt;RabbitMQ&lt;/a&gt; as broker instead of redis, specially if you have a large application which could lead
+to many logging, if you have a micro/small server, you can stick with&amp;nbsp;Redis.&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="Django"></category><category term="Python"></category><category term="Logging"></category></entry><entry><title>Enable Asciifolding in Elasticsearch/Haystack</title><link href="http://mounirmesselmeni.github.io/2015/12/13/enable-asciifolding-in-elasticsearchhaystack/" rel="alternate"></link><updated>2015-12-13T21:04:00+01:00</updated><author><name>Mounir Messelmeni</name></author><id>tag:mounirmesselmeni.github.io,2015-12-13:2015/12/13/enable-asciifolding-in-elasticsearchhaystack/</id><summary type="html">&lt;p&gt;Haystack is a great tool which add a lot of simplicity to use full text search on your Django&amp;nbsp;project.&lt;/p&gt;
+&lt;p&gt;I used it with elasticsearch but I encountered search results which does not ignore ascii 
+characters differences. E.g. searching for&amp;nbsp;&amp;#8216;&lt;/p&gt;
+&lt;p&gt;In fact as mentionned in &lt;a href="https://www.elastic.co/guide/en/elasticsearch/reference/1.4/analysis-asciifolding-tokenfilter.html"&gt;Elasticsearch Docs&lt;/a&gt;, token filter of type asciifolding are used toconverts 
+alphabetic, numeric, and symbolic Unicode characters which are not in the first 127 &lt;span class="caps"&gt;ASCII&lt;/span&gt; characters 
+(the &amp;#8220;Basic Latin&amp;#8221; Unicode block) into their &lt;span class="caps"&gt;ASCII&lt;/span&gt; equivalents, if one&amp;nbsp;exists.&lt;/p&gt;
+&lt;p&gt;To do so, we will add custom &lt;code&gt;ascii_analyser&lt;/code&gt; to the default elasticsearch backend by overriding&amp;nbsp;it.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;haystack&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;indexes&lt;/span&gt;
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;haystack.backends&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;elasticsearch_backend&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;es_backend&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;AsciifoldingElasticBackend&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;es_backend&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ElasticsearchSearchBackend&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="nb"&gt;super&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;AsciifoldingElasticBackend&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;analyzer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;quot;ascii_analyser&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                    &lt;span class="s"&gt;&amp;quot;tokenizer&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;standard&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="s"&gt;&amp;quot;filter&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;standard&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;asciifolding&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;lowercase&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+                &lt;span class="p"&gt;},&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;quot;ngram_analyzer&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                    &lt;span class="s"&gt;&amp;quot;type&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;custom&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="s"&gt;&amp;quot;tokenizer&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;lowercase&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="s"&gt;&amp;quot;filter&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;haystack_ngram&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;asciifolding&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+                &lt;span class="p"&gt;},&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;quot;edgengram_analyzer&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                    &lt;span class="s"&gt;&amp;quot;type&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;custom&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="s"&gt;&amp;quot;tokenizer&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;lowercase&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="s"&gt;&amp;quot;filter&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;haystack_edgengram&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;asciifolding&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+                &lt;span class="p"&gt;}&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DEFAULT_SETTINGS&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;settings&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;analysis&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;analyzer&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;analyzer&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;build_schema&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;fields&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="n"&gt;content_field_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mapping&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;super&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;AsciifoldingElasticBackend&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                                                &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;build_schema&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fields&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+            &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;field_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;field_class&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;fields&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+                &lt;span class="n"&gt;field_mapping&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mapping&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;field_class&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;index_fieldname&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;field_mapping&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;type&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;string&amp;#39;&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="n"&gt;field_class&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;indexed&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="nb"&gt;hasattr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;field_class&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;facet_for&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="n"&gt;field_class&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;field_type&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;ngram&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;edge_ngram&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+                        &lt;span class="n"&gt;field_mapping&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;analyzer&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;ascii_analyser&amp;quot;&lt;/span&gt;
+
+                &lt;span class="n"&gt;mapping&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;update&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="n"&gt;field_class&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;index_fieldname&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;field_mapping&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;content_field_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mapping&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;AsciifoldingElasticSearchEngine&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;es_backend&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ElasticsearchSearchEngine&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;backend&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;AsciifoldingElasticBackend&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The last thing, we need to specify this backend on &lt;code&gt;settings.py&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="n"&gt;HAYSTACK_CONNECTIONS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;default&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;ENGINE&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;haystack_custom_backend.AsciifoldingElasticSearchEngine&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;URL&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;http://127.0.0.1:9200/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;INDEX_NAME&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;haystack&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="p"&gt;},&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</summary><category term="Django"></category><category term="Python"></category><category term="Haystack"></category><category term="elasticsearch"></category></entry><entry><title>Date Format in Django Admin</title><link href="http://mounirmesselmeni.github.io/2014/11/06/date-format-in-django-admin/" rel="alternate"></link><updated>2014-11-06T14:04:00+01:00</updated><author><name>Mounir Messelmeni</name></author><id>tag:mounirmesselmeni.github.io,2014-11-06:2014/11/06/date-format-in-django-admin/</id><summary type="html">&lt;p&gt;Recently I was working on a Django project where I wanted a different date time format other than the default one when English language is active in the Admin &lt;code&gt;list_display&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Many posts on &lt;a href="http://stackoverflow.com/questions/7216764/in-the-django-admin-site-how-do-i-change-the-display-format-of-time-fields"&gt;Stackoverflow&lt;/a&gt; I found, suggest to add a custom method in the &lt;code&gt;ModelAdmin&lt;/code&gt; class like&amp;nbsp;this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;time_seconds&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;obj&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;timefield&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strftime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="si"&gt;%d&lt;/span&gt;&lt;span class="s"&gt; %b %Y %H:%M:%S&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;time_seconds&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;short_description&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Precise Time&amp;#39;&lt;/span&gt;    
+
+    &lt;span class="n"&gt;list_display&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;time_seconds&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The problem with this code, that I must update all my ModelAdmin with DateTime fields like this and without date time&amp;nbsp;internalization.&lt;/p&gt;
+&lt;p&gt;The more comfortable solution for which avoid this repetition is by overriding the default language format (For this case, French format was correct, I need only to change the formatting for English for the DateTime&amp;nbsp;fields).&lt;/p&gt;
+&lt;p&gt;You need just to override Django&amp;#8217;s defaults locale settings. Add this to your &lt;code&gt;settings.py&lt;/code&gt; file&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;django.conf.locale.en&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;formats&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;en_formats&lt;/span&gt;
+    &lt;span class="n"&gt;en_formats&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DATETIME_FORMAT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;d b Y H:i:s&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;You can override for example German&amp;#8217;s default &lt;code&gt;DATETIME_FORMAT&lt;/code&gt; by importing &lt;code&gt;from django.conf.locale.de import formats as de_formats&lt;/code&gt;.&lt;/p&gt;</summary><category term="Django"></category><category term="Python"></category><category term="Django Admin"></category></entry><entry><title>Install vsftpd on Linux and configure nginx as webserver</title><link href="http://mounirmesselmeni.github.io/2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/" rel="alternate"></link><updated>2013-12-03T00:49:00+01:00</updated><author><name>Mounir Messelmeni</name></author><id>tag:mounirmesselmeni.github.io,2013-12-03:2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/</id><summary type="html">&lt;p&gt;In this tutorial we will create an &lt;span class="caps"&gt;FTP&lt;/span&gt; server in Redhat based distribution(Fedora, CentOS, Amazon Linux &lt;span class="caps"&gt;AMI&lt;/span&gt;, Redhat), this tutorial also can be applied for others distibution like Ubuntu or Debian, just change some configuration file location and some commands&amp;nbsp;syntax.&lt;/p&gt;
+&lt;p&gt;We will install &lt;a href="https://security.appspot.com/vsftpd.html"&gt;&lt;span class="caps"&gt;VSFTPD&lt;/span&gt;&lt;/a&gt; and &lt;a href="http://nginx.com/"&gt;Nginx&lt;/a&gt; to dispose uploaded data via &lt;span class="caps"&gt;FTP&lt;/span&gt; with&amp;nbsp;Nginx.&lt;/p&gt;
+&lt;!-- more --&gt;
+
+&lt;h3&gt;&lt;span class="caps"&gt;VSFTPD&lt;/span&gt;&amp;nbsp;Installation&lt;/h3&gt;
+&lt;p&gt;First of all, let&amp;#8217;s install vsftpd, an awesome &lt;span class="caps"&gt;FTP&lt;/span&gt; server very simple to&amp;nbsp;use.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    sudo yum install vsftpd
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Then, let&amp;#8217;s copy this configuration into &lt;code&gt;/etc/vsftpd/vsftpd.conf&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="nv"&gt;anonymous_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;NO
+    &lt;span class="nv"&gt;local_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;write_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;local_umask&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;022
+    &lt;span class="nv"&gt;dirmessage_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;xferlog_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;connect_from_port_20&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;NO
+    &lt;span class="nv"&gt;xferlog_file&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/var/log/vsftpd/vsftpd.log
+    &lt;span class="nv"&gt;xferlog_std_format&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;ftpd_banner&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;Welcome to FTP service
+    &lt;span class="nv"&gt;chroot_local_user&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;listen&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;pam_service_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;vsftpd
+    &lt;span class="nv"&gt;tcp_wrappers&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;userlist_file&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/etc/vsftpd/vsftpd.userlist
+    &lt;span class="nv"&gt;userlist_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;userlist_deny&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;NO
+    &lt;span class="nv"&gt;pasv_max_port&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;51000
+    &lt;span class="nv"&gt;pasv_min_port&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;50000
+    &lt;span class="nv"&gt;port_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;pasv_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;pasv_address&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YOUR_SERVER_URL
+    &lt;span class="nv"&gt;pasv_addr_resolve&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;check_shell&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;NO
+    &lt;span class="nv"&gt;passwd_chroot_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;As you see, in this configuration we had edited this&amp;nbsp;settings:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Disabling anonymous connections: &lt;code&gt;anonymous_enable=NO&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Creating a custom log folder: &lt;code&gt;/var/log/vsftpd/vsftpd.log&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Activating the custom log: &lt;code&gt;xferlog_std_format=YES&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Adding a custom welcome message to our &lt;span class="caps"&gt;FTP&lt;/span&gt; Server: &lt;code&gt;ftpd_banner=Welcome to FTP service&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Enabling local users: &lt;code&gt;userlist_enable=YES&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Specifying users list: &lt;code&gt;userlist_file=/etc/vsftpd/vsftpd.userlist&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Enabling users list: &lt;code&gt;userlist_enable=YES&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Specifying users list as authorized list: &lt;code&gt;userlist_deny=NO&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;The ftpuser should be able to write data: &lt;code&gt;write_enable=YES&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Set umask to 022 to make sure that all the files (644) and folders (755) you upload get the proper permissions: &lt;code&gt;local_umask=022&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Configure vsftpd to use ports 50000-51000 for passive data&amp;nbsp;transfers&lt;/li&gt;
+&lt;li&gt;Change &lt;code&gt;YOUR_SERVER_URL&lt;/code&gt; with the &lt;span class="caps"&gt;IP&lt;/span&gt; or domain name server, if you use &lt;span class="caps"&gt;IP&lt;/span&gt; you can change &lt;code&gt;pasv_addr_resolve&lt;/code&gt; to &lt;code&gt;NO&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Next, we should create the folder where data should be, make this folder the home directory of the ftp user we will create. And define a password for this&amp;nbsp;user.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    sudo mkdir -p /var/log/vsftpd/
+    sudo mkdir -p /var/www/ftp
+    sudo useradd -d /var/www/ftp/ -s /sbin/nologin ftp_user
+    sudo passwd ftp_user
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now, we add this user in the authorized users list, create a group named ftpusers and affect it to the ftp_user and make ftp_user own the ftp&amp;nbsp;directory.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    sudo &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;ftp_user&amp;quot;&lt;/span&gt; &amp;gt; /etc/vsftpd/vsftpd.userlist
+    sudo groupadd ftpusers
+    sudo usermod -G ftpusers ftp_user
+    sudo chown ftp_user /var/www/ftp/ -R
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Our Vsftpd server need to be restarted, we can also add it to start on boot with &lt;code&gt;chkconfig&lt;/code&gt;, just update your firewall configuration to add the port 21/tcp and port range&amp;nbsp;50000-51000/tcp.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    sudo chkconfig vsftpd on
+    sudo service vsftpd restart
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;You can test your server with ftp command or FileZilla&amp;nbsp;client.&lt;/p&gt;
+&lt;h3&gt;Nginx&amp;nbsp;Installation&lt;/h3&gt;
+&lt;p&gt;Let&amp;#8217;s install and configure Nginx to dispose our uploaded &lt;span class="caps"&gt;FTP&lt;/span&gt; data (&lt;span class="caps"&gt;HTML&lt;/span&gt;, Images,&amp;nbsp;&amp;#8230;).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    sudo yum install vsftpd
+    sudo chkconfig nginx --add
+    sudo chkconfig nginx on --level 235
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now, copy the following configuration into &lt;code&gt;/etc/nginx/conf.d/ftp.conf&lt;/code&gt; and start nginx service &lt;code&gt;sudo service nginx start&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="k"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="kn"&gt;listen&lt;/span&gt;        &lt;span class="mi"&gt;80&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+      &lt;span class="kn"&gt;server_name&lt;/span&gt;   &lt;span class="s"&gt;domain&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+      &lt;span class="kn"&gt;location&lt;/span&gt; &lt;span class="s"&gt;/&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="kn"&gt;autoindex&lt;/span&gt; &lt;span class="no"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="kn"&gt;root&lt;/span&gt;  &lt;span class="s"&gt;/var/www/ftp/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Finally, don&amp;#8217;t forget to add port 80 rule to your firewall&amp;nbsp;configuration.&lt;/p&gt;
+&lt;p&gt;That&amp;#8217;s all&amp;nbsp;!&lt;/p&gt;</summary><category term="Linux"></category><category term="Nginx"></category></entry><entry><title>Django grouped select field for ModelChoiceField or ModelMultipleChoiceField</title><link href="http://mounirmesselmeni.github.io/2013/11/25/django-grouped-select-field-for-modelchoicefield-or-modelmultiplechoicefield/" rel="alternate"></link><updated>2013-11-25T11:08:00+01:00</updated><author><name>Mounir Messelmeni</name></author><id>tag:mounirmesselmeni.github.io,2013-11-25:2013/11/25/django-grouped-select-field-for-modelchoicefield-or-modelmultiplechoicefield/</id><summary type="html">&lt;p&gt;Django forms&amp;#8217;s builtin fields like ChoiceField, ModelChoiceField use by default &lt;code&gt;forms.Select&lt;/code&gt; widget, but what we do if we need a Select with grouped&amp;nbsp;options.&lt;/p&gt;
+&lt;p&gt;I found this awesome &lt;a href="https://djangosnippets.org/snippets/1968/"&gt;snippets&lt;/a&gt; that&amp;#8217;s helped me to achieve this, just in my case I needed to add a line of code to show only options with&amp;nbsp;parent.&lt;/p&gt;
+&lt;!-- more --&gt;
+
+&lt;h2&gt;Example&lt;/h2&gt;
+&lt;p&gt;Here&amp;#8217;s a model&amp;nbsp;example:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Category&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CharField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;parent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ForeignKey&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;self&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;null&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;blank&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__unicode__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s"&gt;u&amp;#39;{0}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;I created a form that use this&amp;nbsp;model:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;ExampleForm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;forms&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Form&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="n"&gt;category&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;GroupedModelChoiceField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+            &lt;span class="n"&gt;label&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;_&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Category&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+            &lt;span class="n"&gt;group_by_field&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;parent&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;queryset&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;Category&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;objects&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;all&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+        &lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The snippet show categories with None label, I don&amp;#8217;t need to make user able to select Categories, only childs can be selected. So, I just edited the line 50 of the snippet to remove group&amp;nbsp;categories.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;itertools&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;groupby&lt;/span&gt;
+
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;django.forms.models&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;ModelChoiceIterator&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ModelChoiceField&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;GroupedModelChoiceField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ModelChoiceField&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;group_by_field&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;group_label&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="sd"&gt;            group_by_field is the name of a field on the model&lt;/span&gt;
+&lt;span class="sd"&gt;            group_label is a function to return a label for each choice group&lt;/span&gt;
+&lt;span class="sd"&gt;            &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+            &lt;span class="nb"&gt;super&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;GroupedModelChoiceField&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;group_by_field&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;group_by_field&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;group_label&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;group_label&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;group&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;group&lt;/span&gt;
+            &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;group_label&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;group_label&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;_get_choices&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="sd"&gt;            Exactly as per ModelChoiceField except returns new iterator class&lt;/span&gt;
+&lt;span class="sd"&gt;            &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;hasattr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;_choices&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+                &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_choices&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;GroupedModelChoiceIterator&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;choices&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;property&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;_get_choices&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ModelChoiceField&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_set_choices&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;GroupedModelChoiceIterator&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ModelChoiceIterator&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__iter__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;field&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;empty_label&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;field&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;empty_label&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;field&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cache_choices&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;field&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;choice_cache&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                    &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;field&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;choice_cache&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+                        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;field&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;group_label&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;group&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+                         &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;choice&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ch&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;ch&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;choices&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+                        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;group&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;choices&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;groupby&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+                            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;queryset&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;all&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+                            &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;row&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;getattr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;row&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;field&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;group_by_field&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+                    &lt;span class="p"&gt;]&lt;/span&gt;
+                &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;choice&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;field&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;choice_cache&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                    &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;choice&lt;/span&gt;
+            &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;group&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;choices&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;groupby&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+                        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;queryset&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;all&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+                        &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;row&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;getattr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+                            &lt;span class="n"&gt;row&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;field&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;group_by_field&lt;/span&gt;&lt;span class="p"&gt;)):&lt;/span&gt;
+                    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;group&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="c"&gt;#Line added&lt;/span&gt;
+                        &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
+                            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;field&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;group_label&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;group&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+                            &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;choice&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ch&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;ch&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;choices&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Okay, now this custom field work, but what if I need a grouped select multiple with &lt;code&gt;ModelMultipleChoiceField&lt;/code&gt; ?&lt;/p&gt;
+&lt;p&gt;We can just add a new field like &lt;code&gt;GroupedModelChoiceField&lt;/code&gt; that inherits from &lt;code&gt;ModelMultipleChoiceField&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;django.forms.models&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;ModelMultipleChoiceField&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;GroupedMultipleModelChoiceField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ModelMultipleChoiceField&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;group_by_field&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;group_label&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="sd"&gt;            group_by_field is the name of a field on the model&lt;/span&gt;
+&lt;span class="sd"&gt;            group_label is a function to return a label for each choice group&lt;/span&gt;
+&lt;span class="sd"&gt;            &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+            &lt;span class="nb"&gt;super&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;GroupedMultipleModelChoiceField&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;group_by_field&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;group_by_field&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;group_label&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;group_label&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;group&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;group&lt;/span&gt;
+            &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;group_label&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;group_label&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;_get_choices&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="sd"&gt;            Exactly as per ModelChoiceField except returns new iterator class&lt;/span&gt;
+&lt;span class="sd"&gt;            &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;hasattr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;_choices&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+                &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_choices&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;GroupedModelChoiceIterator&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;choices&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;property&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;_get_choices&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ModelMultipleChoiceField&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_set_choices&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</summary><category term="Django"></category><category term="Python"></category><category term="Custom Fields"></category></entry><entry><title>Migrate Django ManyToMany field to ManyToMany through with South</title><link href="http://mounirmesselmeni.github.io/2013/07/28/migrate-django-manytomany-field-to-manytomany-through-with-south/" rel="alternate"></link><updated>2013-07-28T02:30:00+02:00</updated><author><name>Mounir Messelmeni</name></author><id>tag:mounirmesselmeni.github.io,2013-07-28:2013/07/28/migrate-django-manytomany-field-to-manytomany-through-with-south/</id><summary type="html">&lt;p&gt;When working in a project already in production, you could encounter this&amp;nbsp;case&lt;/p&gt;
+&lt;p&gt;You have a model that contains a &lt;code&gt;ManyToMany&lt;/code&gt; field without through model, Django in this case take care itself for the join table, it create a join table that contains three columns: &lt;span class="caps"&gt;ID&lt;/span&gt;, pk of model1 and pk of model2 with a unique together constraint. At a specific time you want to add new column to the join table. Alright, with &lt;a href="http://south.readthedocs.org/en/latest/"&gt;South&lt;/a&gt; installed you can do it easly but South doesn&amp;#8217;t import your old data it&amp;#8217;s just delete old table. How to import data from old schema to the new&amp;nbsp;one?&lt;/p&gt;
+&lt;!-- more --&gt;
+
+&lt;p&gt;Let&amp;#8217;s make a concret example to be able to understand this case&amp;nbsp;briefly.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Create a Django project: &lt;code&gt;django-admin.py startproject migration_tutorial&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Go into project: &lt;code&gt;cd migration_tutorial&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Create a Django app named studies: &lt;code&gt;python manage.py startapp studies&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;In &lt;code&gt;migration_tutorial/migration_tutorial/settings.py&lt;/code&gt; change database config to sqlite and add studies to &lt;code&gt;INSTALLED_APPS&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;We add also South to our &lt;code&gt;INSTALLED_APPS&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You should read &lt;a href="http://south.readthedocs.org/en/latest/"&gt;South&lt;/a&gt; documentation if you are not familiar&amp;nbsp;with.  &lt;/p&gt;
+&lt;p&gt;Here&amp;#8217;s our changes in &lt;code&gt;settings.py&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="n"&gt;DATABASES&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;default&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;ENGINE&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;django.db.backends.postgresql_psycopg2&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;NAME&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;migration_tutorial&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;USER&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;postgres&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;PASSWORD&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;HOST&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;PORT&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="n"&gt;INSTALLED_APPS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;django.contrib.auth&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;django.contrib.contenttypes&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;django.contrib.sessions&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;django.contrib.sites&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;django.contrib.messages&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;django.contrib.staticfiles&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;django.contrib.admin&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+
+        &lt;span class="s"&gt;&amp;#39;south&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+
+        &lt;span class="s"&gt;&amp;#39;studies&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Let&amp;#8217;s create our&amp;nbsp;model&lt;/h2&gt;
+&lt;p&gt;We are going to create a simple model for Professor, Student and Course&amp;nbsp;application.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A Professor teach many&amp;nbsp;Students&lt;/li&gt;
+&lt;li&gt;A Student is taught by many&amp;nbsp;Professors &lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So we have a ManyToMany relation between Students and Professors. Here&amp;#8217;s our Django model under the studies&amp;nbsp;app&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;django.db&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="n"&gt;first_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CharField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;last_name&lt;/span&gt;  &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CharField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__unicode__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt; &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;first_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;last_name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Student&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="n"&gt;first_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CharField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;last_name&lt;/span&gt;  &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CharField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;professors&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ManyToManyField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__unicode__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt; &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;first_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;last_name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Run the&amp;nbsp;project&lt;/h2&gt;
+&lt;p&gt;Alright, let&amp;#8217;s run our&amp;nbsp;project:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Init South Migration: &lt;code&gt;python manage.py schemamigration studies --init&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Sync Database: &lt;code&gt;python manage.py syncdb --noinput&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Migrate our app: &lt;code&gt;python manage.py migrate&lt;/code&gt;, in this way South take care of schema&amp;nbsp;creation&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Now, we are going to insert some data using&amp;nbsp;shell:&lt;/p&gt;
+&lt;p&gt;Enter in shell mode: &lt;code&gt;python manage.py shell&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;studies.models&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Student&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;professor1&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;first_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Joshua&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;last_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Smith&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;professor1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;save&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;professor2&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;first_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Ethan&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;last_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Brown&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;professor2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;save&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student1&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Student&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;first_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Justin&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;last_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Martin&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;save&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student2&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Student&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;first_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Tom&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;last_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Taylor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;save&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="c"&gt;#Let&amp;#39;s add professor 1 to Student one&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;professors&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;professor1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="c"&gt;#Check if data is persisted to database&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student1&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Student&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;objects&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;first_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Justin&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;professors&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;all&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="c"&gt;#Let&amp;#39;s add professor2 to student1 too&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;professors&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;professor2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="c"&gt;#Professor2 to student2&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;professors&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;professor2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Note that when working with Django ManyToManyField without through, Django provide some useful method like add method we just&amp;nbsp;use.&lt;/p&gt;
+&lt;h2&gt;Our migration&amp;nbsp;case&lt;/h2&gt;
+&lt;p&gt;Now think if we had this model in production, we have many Students and Professors relation stored in our database. At a specific time we want to add course name taught by Professor to a student, this is a join table column. We are going no to use a through model to add this&amp;nbsp;attribute.&lt;/p&gt;
+&lt;p&gt;Here&amp;#8217;s our updated&amp;nbsp;models:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;django.db&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="n"&gt;first_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CharField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;last_name&lt;/span&gt;  &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CharField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__unicode__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt; &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;first_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;last_name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Student&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="n"&gt;first_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CharField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;last_name&lt;/span&gt;  &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CharField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;professors&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ManyToManyField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;through&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__unicode__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt; &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;first_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;last_name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Course&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="n"&gt;name&lt;/span&gt;      &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CharField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;professor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ForeignKey&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;student&lt;/span&gt;   &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ForeignKey&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Student&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Meta&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;unique_together&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__unicode__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now, we are going to use South to migrate our schemas. Run &lt;code&gt;python manage.py schemamigration studies --auto&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;South create a migration script under studies/migrations named &lt;code&gt;0002_auto__add_course__add_unique_course_professor_student.py&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Here&amp;#8217;s&amp;nbsp;it:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="c"&gt;# -*- coding: utf-8 -*-&lt;/span&gt;
+    &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;datetime&lt;/span&gt;
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;south.db&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;south.v2&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;SchemaMigration&lt;/span&gt;
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;django.db&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Migration&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;SchemaMigration&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;forwards&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;orm&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="c"&gt;# Adding model &amp;#39;Course&amp;#39;&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create_table&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies_course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.AutoField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;primary_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)),&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.CharField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;)),&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.related.ForeignKey&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;to&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;orm&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;studies.Professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])),&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.related.ForeignKey&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;to&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;orm&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;studies.Student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])),&lt;/span&gt;
+            &lt;span class="p"&gt;))&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;send_create_signal&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+            &lt;span class="c"&gt;# Adding unique constraint on &amp;#39;Course&amp;#39;, fields [&amp;#39;professor&amp;#39;, &amp;#39;student&amp;#39;]&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create_unique&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies_course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;professor_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;student_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+            &lt;span class="c"&gt;# Removing M2M table for field professors on &amp;#39;Student&amp;#39;&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;delete_table&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shorten_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies_student_professors&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;backwards&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;orm&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="c"&gt;# Removing unique constraint on &amp;#39;Course&amp;#39;, fields [&amp;#39;professor&amp;#39;, &amp;#39;student&amp;#39;]&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;delete_unique&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies_course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;professor_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;student_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+            &lt;span class="c"&gt;# Deleting model &amp;#39;Course&amp;#39;&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;delete_table&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies_course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+            &lt;span class="c"&gt;# Adding M2M table for field professors on &amp;#39;Student&amp;#39;&lt;/span&gt;
+            &lt;span class="n"&gt;m2m_table_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shorten_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies_student_professors&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create_table&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;m2m_table_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;AutoField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;verbose_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;ID&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;primary_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;auto_created&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)),&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ForeignKey&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;orm&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies.student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;null&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;)),&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ForeignKey&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;orm&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies.professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;null&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+            &lt;span class="p"&gt;))&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create_unique&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;m2m_table_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;student_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;professor_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+
+        &lt;span class="n"&gt;models&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="s"&gt;u&amp;#39;studies.course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;Meta&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;unique_together&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;([&amp;#39;professor&amp;#39;, &amp;#39;student&amp;#39;],)&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;object_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
+                &lt;span class="s"&gt;u&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.AutoField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;primary_key&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;True&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.CharField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;max_length&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;50&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.related.ForeignKey&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;to&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;orm[&amp;#39;studies.Professor&amp;#39;]&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.related.ForeignKey&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;to&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;orm[&amp;#39;studies.Student&amp;#39;]&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="s"&gt;u&amp;#39;studies.professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;Meta&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;object_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;first_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.CharField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;max_length&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;50&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;u&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.AutoField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;primary_key&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;True&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;last_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.CharField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;max_length&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;50&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="s"&gt;u&amp;#39;studies.student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;Meta&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;object_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;first_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.CharField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;max_length&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;50&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;u&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.AutoField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;primary_key&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;True&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;last_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.CharField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;max_length&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;50&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;professors&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.related.ManyToManyField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;to&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;orm[&amp;#39;studies.Professor&amp;#39;]&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;through&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;orm[&amp;#39;studies.Course&amp;#39;]&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;symmetrical&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;False&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+
+        &lt;span class="n"&gt;complete_apps&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;studies&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;There&amp;#8217;s two main&amp;nbsp;methods:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;forwards: used to apply new&amp;nbsp;changes&lt;/li&gt;
+&lt;li&gt;backwards: used to revert new&amp;nbsp;changes&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We are going now to add custom code to import existing relation into the new schema Course.
+For the attribute name in Course I&amp;#8217;m going to insert mathematics, in some case we need some details to know what we are going to put in the added&amp;nbsp;column.&lt;/p&gt;
+&lt;p&gt;We insert our custom code in the forwards method, it load data from old schema generated by Django and push it into the new schema&amp;nbsp;Course.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="c"&gt;# -*- coding: utf-8 -*-&lt;/span&gt;
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;south.utils&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;datetime_utils&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;south.db&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;south.v2&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;SchemaMigration&lt;/span&gt;
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;django.db&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;
+
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;studies.models&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Student&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Course&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;OldJoinMock&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Meta&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;db_table&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;u&amp;#39;studies_student_professors&amp;#39;&lt;/span&gt;
+
+        &lt;span class="n"&gt;student&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ForeignKey&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Student&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;professor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ForeignKey&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Migration&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;SchemaMigration&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;forwards&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;orm&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="c"&gt;# Adding model &amp;#39;Course&amp;#39;&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create_table&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies_course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.AutoField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;primary_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)),&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.CharField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;max_length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;)),&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.related.ForeignKey&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;to&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;orm&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;studies.Professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])),&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.related.ForeignKey&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;to&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;orm&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;studies.Student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])),&lt;/span&gt;
+            &lt;span class="p"&gt;))&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;send_create_signal&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+            &lt;span class="c"&gt;# Adding unique constraint on &amp;#39;Course&amp;#39;, fields [&amp;#39;professor&amp;#39;, &amp;#39;student&amp;#39;]&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create_unique&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies_course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;professor_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;student_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+            &lt;span class="c"&gt;#Our custom code here, before delete_table and after create Course table&lt;/span&gt;
+            &lt;span class="n"&gt;Course&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;objects&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;bulk_create&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;
+                &lt;span class="n"&gt;Course&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+                    &lt;span class="n"&gt;student&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;student&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="n"&gt;professor&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;professor&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;mathematics&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;OldJoinMock&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;objects&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;all&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+            &lt;span class="p"&gt;])&lt;/span&gt;
+
+            &lt;span class="c"&gt;# Removing M2M table for field professors on &amp;#39;Student&amp;#39;&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;delete_table&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shorten_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies_student_professors&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+
+        &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;backwards&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;orm&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="c"&gt;# Removing unique constraint on &amp;#39;Course&amp;#39;, fields [&amp;#39;professor&amp;#39;, &amp;#39;student&amp;#39;]&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;delete_unique&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies_course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;professor_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;student_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+            &lt;span class="c"&gt;# Deleting model &amp;#39;Course&amp;#39;&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;delete_table&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies_course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+            &lt;span class="c"&gt;# Adding M2M table for field professors on &amp;#39;Student&amp;#39;&lt;/span&gt;
+            &lt;span class="n"&gt;m2m_table_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shorten_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies_student_professors&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create_table&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;m2m_table_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;AutoField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;verbose_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;ID&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;primary_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;auto_created&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)),&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ForeignKey&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;orm&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies.student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;null&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;)),&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;models&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ForeignKey&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;orm&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;u&amp;#39;studies.professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;null&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+            &lt;span class="p"&gt;))&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create_unique&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;m2m_table_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;student_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;professor_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+
+        &lt;span class="n"&gt;models&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="s"&gt;u&amp;#39;studies.course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;Meta&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;unique_together&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;([&amp;#39;professor&amp;#39;, &amp;#39;student&amp;#39;],)&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;object_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Course&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
+                &lt;span class="s"&gt;u&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.AutoField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;primary_key&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;True&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.CharField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;max_length&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;50&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.related.ForeignKey&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;to&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;orm[&amp;#39;studies.Professor&amp;#39;]&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.related.ForeignKey&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;to&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;orm[&amp;#39;studies.Student&amp;#39;]&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="s"&gt;u&amp;#39;studies.professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;Meta&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;object_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Professor&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;first_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.CharField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;max_length&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;50&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;u&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.AutoField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;primary_key&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;True&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;last_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.CharField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;max_length&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;50&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="s"&gt;u&amp;#39;studies.student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;Meta&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;object_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Student&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;first_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.CharField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;max_length&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;50&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;u&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.AutoField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;primary_key&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;True&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;last_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.CharField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;max_length&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;50&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;#39;professors&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;django.db.models.fields.related.ManyToManyField&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;to&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;orm[&amp;#39;studies.Professor&amp;#39;]&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;through&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;u&amp;quot;orm[&amp;#39;studies.Course&amp;#39;]&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;symmetrical&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;False&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+
+        &lt;span class="n"&gt;complete_apps&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;studies&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Run migration: &lt;code&gt;python manage.py migrate&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Let&amp;#8217;s check our data&amp;nbsp;now:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;studies.models&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Student&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student1&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Student&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;objects&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;first_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Justin&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;professors&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;all&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="c"&gt;#should be professor1 and professor2&lt;/span&gt;
+    &lt;span class="o"&gt;...&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Joshua&lt;/span&gt; &lt;span class="n"&gt;Smith&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Ethan&lt;/span&gt; &lt;span class="n"&gt;Brown&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student2&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Student&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;objects&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;first_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Tom&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;professors&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;all&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="c"&gt;#should be professor2&lt;/span&gt;
+    &lt;span class="o"&gt;...&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;Professor&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Ethan&lt;/span&gt; &lt;span class="n"&gt;Brown&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Here&amp;#8217;s it, our relation are imported to our Course model easily. You can add also a custom code in backwards method needed for&amp;nbsp;revert.&lt;/p&gt;
+&lt;p&gt;Just don&amp;#8217;t forget to update your code because methods add and remove are not valid&amp;nbsp;now:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Add: &lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;professors&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;professor1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="c"&gt;#Replace with&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;Course&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;student&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;student1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;professor&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;professor1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Django&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;Remove:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;student1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;professors&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;remove&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;professor1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="c"&gt;#Replace with&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;Course&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;objects&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;student&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;student1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;professor&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;professor1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;delete&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Last thing, use South in your Django projects, &lt;b&gt;you must use it&lt;/b&gt; from project start else from&amp;nbsp;now!&lt;/p&gt;
+&lt;p&gt;Good luck with your migrations&amp;nbsp;!&lt;/p&gt;</summary><category term="Django"></category><category term="South"></category><category term="Migration"></category><category term="Python"></category></entry><entry><title>Simple AngularJS for Stackoverflow API</title><link href="http://mounirmesselmeni.github.io/2013/07/01/simple-angularjs-for-stackoverflow-api/" rel="alternate"></link><updated>2013-07-01T00:30:00+02:00</updated><author><name>Mounir Messelmeni</name></author><id>tag:mounirmesselmeni.github.io,2013-07-01:2013/07/01/simple-angularjs-for-stackoverflow-api/</id><summary type="html">&lt;h2&gt;Angular &lt;span class="caps"&gt;JS&lt;/span&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;a href="http://www.angularjs.org"&gt;AngularJS&lt;/a&gt; is a javascript and client side Framework. It expose a toolset based on extending the &lt;span class="caps"&gt;HTML&lt;/span&gt; vocabulary for your&amp;nbsp;application.&lt;/p&gt;
+&lt;p&gt;There&amp;#8217;s many other Frameworks like &lt;a href="http://backbonejs.org"&gt;Backbone.js&lt;/a&gt;, &lt;a href="http://emberjs.com"&gt;Ember.js&lt;/a&gt;, &lt;a href="http://knockoutjs.com"&gt;Knockout&lt;/a&gt;&amp;nbsp;&amp;#8230;&lt;/p&gt;
+&lt;h2&gt;Main&amp;nbsp;concepts&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Model: Application&amp;nbsp;data&lt;/li&gt;
+&lt;li&gt;View: What users&amp;nbsp;sees&lt;/li&gt;
+&lt;li&gt;Controller: Application&amp;nbsp;behavior&lt;/li&gt;
+&lt;li&gt;Scope: Glue between application data and&amp;nbsp;behavior&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;$&lt;/code&gt;: Angular&amp;nbsp;namespace&lt;/li&gt;
+&lt;li&gt;Module: configure the&amp;nbsp;injector&lt;/li&gt;
+&lt;li&gt;Injector: assembles the&amp;nbsp;application&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- more --&gt;
+
+&lt;p&gt;AngularJS offers two-way data binding without funcing up the model. You don&amp;#8217;t need to write a model like other javascript&amp;nbsp;librairies.&lt;/p&gt;
+&lt;p _="%" center="center" http:_i.stack.imgur.com_KzDS3.png="http://i.stack.imgur.com/KzDS3.png" img="img"&gt;&lt;img alt="Photo" src="{http://docs.angularjs.org/img/One_Way_Data_Binding.png}" /&gt;
+{% img center&amp;nbsp;%} &lt;/p&gt;
+&lt;p&gt;Data-binding is an automatic way of updating the view whenever the model changes, as well as updating the model whenever the view changes. This is awesome because it eliminates &lt;span class="caps"&gt;DOM&lt;/span&gt; manipulation from the list of things you have to worry about. Source &lt;a href="http://docs.angularjs.org/api"&gt;AngularJS&amp;nbsp;doc&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Controllers are the behavior behind the &lt;span class="caps"&gt;DOM&lt;/span&gt; elements. AngularJS lets you express the behavior in a clean readable form without the usual boilerplate of updating the &lt;span class="caps"&gt;DOM&lt;/span&gt;, registering callbacks or watching model&amp;nbsp;changes. &lt;/p&gt;
+&lt;p&gt;A model for AngularJS is just a simple Javascript Object (&lt;span class="caps"&gt;JSON&lt;/span&gt;).
+This means, if we load a user from an &lt;span class="caps"&gt;API&lt;/span&gt; call, we can use it in html like he&amp;#8217;s structured from server.&amp;nbsp;Magic!&lt;/p&gt;
+&lt;h2&gt;How it&amp;nbsp;works&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Browser loads the &lt;span class="caps"&gt;HTML&lt;/span&gt; and then the AngularJS&amp;nbsp;script.&lt;/li&gt;
+&lt;li&gt;AngularJS wait for &lt;code&gt;DOMContentLoaded&lt;/code&gt; event and looks for the &lt;code&gt;ng-app&lt;/code&gt; directive.&lt;/li&gt;
+&lt;li&gt;The module specified in &lt;code&gt;ng-app&lt;/code&gt; is used to configure the&amp;nbsp;injector.&lt;/li&gt;
+&lt;li&gt;The injector is used to create the &lt;code&gt;$compile&lt;/code&gt; service and &lt;code&gt;$rootScope&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;$compile&lt;/code&gt; compiles the &lt;span class="caps"&gt;DOM&lt;/span&gt; and links it with &lt;code&gt;$rootScope&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;{% img center http://docs.angularjs.org/img/guide/concepts-startup.png&amp;nbsp;%} &lt;/p&gt;
+&lt;h2&gt;Our first application with&amp;nbsp;AngularJS&lt;/h2&gt;
+&lt;p&gt;The goal of this section&amp;#8217;s to use AngularJS in a simple app, we are going to use &lt;a href="http://api.stackexchange.com"&gt;Stack Exchange &lt;span class="caps"&gt;API&lt;/span&gt; V2.0 &lt;/a&gt; just for demonstration purpose. I choose &lt;a href="http://www.stackoverflow.com"&gt;Stackoverflow&lt;/a&gt; simply because I like it and it&amp;#8217;s helpful for all of&amp;nbsp;us.&lt;/p&gt;
+&lt;h2&gt;Module&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;soApp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;angular&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;module&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;soApp&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[]);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;To create an AngularJS module, we just provide our module a name, in our case it&amp;#8217;s &lt;code&gt;soApp&lt;/code&gt;.
+We use here an empty array, this array provides modules dependencies, all modules uses by our modules. We don&amp;#8217;t need this&amp;nbsp;time.&lt;/p&gt;
+&lt;h2&gt;Controller&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nx"&gt;soApp&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;controller&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;MainController&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;MainController&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;$scope&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+        &lt;span class="c1"&gt;//Controller behavior here&lt;/span&gt;
+    &lt;span class="p"&gt;});&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;To be&amp;nbsp;continued&lt;/p&gt;</summary><category term="javascript"></category><category term="AngularJS"></category><category term="Stackoverflow API"></category></entry><entry><title>Installing Sublime Text 3 on Fedora 19</title><link href="http://mounirmesselmeni.github.io/2013/06/30/installing-sublime-text-3-on-fedora-19/" rel="alternate"></link><updated>2013-06-30T16:03:00+02:00</updated><author><name>Mounir Messelmeni</name></author><id>tag:mounirmesselmeni.github.io,2013-06-30:2013/06/30/installing-sublime-text-3-on-fedora-19/</id><summary type="html">&lt;p&gt;To install sublime text on Fedora 19 (16, 17 and 18), download this&amp;nbsp;gist&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://www.sublimetext.com/blog/articles/sublime-text-3-public-beta"&gt;Sublime Text 3&lt;/a&gt; Beta is now open to non-registered users. &lt;a href="http://www.sublimetext.com/3"&gt;Download&lt;/a&gt; the tarball (32 or 64&amp;nbsp;bits).&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Go to your Downloads folder: &lt;code&gt;cd Downloads&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Download or copy this &lt;span class="caps"&gt;GIST&lt;/span&gt; in your Downloads&amp;nbsp;folder.&lt;/li&gt;
+&lt;li&gt;Execute this script by &lt;code&gt;chmod +x sublime3_fedora19.sh&lt;/code&gt; and then &lt;code&gt;sudo ./sublime3_fedora19.sh sublime_text_3_build_3047_x64.tar.bz2&lt;/code&gt;, &lt;code&gt;sublime_text_3_build_3047_x64.tar.bz2&lt;/code&gt; is the downloaded tarball, change it if you download other&amp;nbsp;version.&lt;/li&gt;
+&lt;li&gt;Now your sublime text is installed and integrated to your gnome&amp;nbsp;desktop.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- more --&gt;
+
+&lt;div class="gist"&gt;
+    &lt;script src='https://gist.github.com/5895264.js'&gt;&lt;/script&gt;
+    &lt;noscript&gt;
+        &lt;pre&gt;&lt;code&gt;#!/bin/sh
+ 
+SCRIPT="#!/bin/sh
+if [ \${1} == \"--help\" ]; then
+	/opt/sublime_text/sublime_text --help
+else
+	/opt/sublime_text/sublime_text
+fi
+"
+ 
+tar -xvjf "$1"
+sudo cp -fr "sublime_text_3/sublime_text.desktop" "/usr/share/applications/sublime_text.desktop"
+sudo sed -i 's/Icon=sublime-text/Icon=\/opt\/sublime_text\/Icon\/128x128\/sublime-text.png/g' /usr/share/applications/sublime_text.desktop
+sudo mv "sublime_text_3" "/opt/sublime_text"
+sudo echo "${SCRIPT}" &gt; "/usr/bin/sublime_text"
+sudo chmod +x "/usr/bin/sublime_text"
+ 
+echo "Finish!"&lt;/code&gt;&lt;/pre&gt;
+    &lt;/noscript&gt;
+&lt;/div&gt;
+&lt;h2&gt;Sublime Text 3 Package&amp;nbsp;Control&lt;/h2&gt;
+&lt;p&gt;To enable Package control in Sublime Text&amp;nbsp;3:&lt;/p&gt;
+&lt;p&gt;The simplest method of installation is through the Sublime Text console. The console is accessed via the &lt;code&gt;ctrl+&lt;/code&gt; shortcut or the View &amp;gt; Show Console menu. Once open, paste the following Python code for your version of Sublime Text into the&amp;nbsp;console.&lt;/p&gt;
+&lt;p _="%" endcodeblock="endcodeblock"&gt;{% codeblock lang:python %}
+    import urllib.request,os; pf = &amp;#8216;Package Control.sublime-package&amp;#8217;; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); open(os.path.join(ipp, pf), &amp;#8216;wb&amp;#8217;).write(urllib.request.urlopen( &amp;#8216;http://sublime.wbond.net/&amp;#8217; + pf.replace(&amp;#8216;&amp;nbsp;&amp;#8216;,&amp;#8217;%20&amp;#8217;)).read())&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://sublime.wbond.net/installation#st3"&gt;Source&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://sublime.wbond.net/browse"&gt;Here&amp;#8217;s&lt;/a&gt; the list plugins with compatibility&amp;nbsp;indicator.&lt;/p&gt;
+&lt;h2&gt;Sublime Text 3 Useful&amp;nbsp;Shortcuts&lt;/h2&gt;
+&lt;div class="gist"&gt;
+    &lt;script src='https://gist.github.com/5895595.js'&gt;&lt;/script&gt;
+    &lt;noscript&gt;
+        &lt;pre&gt;&lt;code&gt;h2. General
+
+| *Ctrl+KB* | toggle side bar |
+| *Ctrl+Shift+P* | command prompt |
+| *Ctrl+`* | python console |
+| *Ctrl+N* | new file |
+
+h2. Editing
+
+| *Ctrl+L* | select line (repeat select next lines) |
+| *Ctrl+D* | select word (repeat select others occurrences in context for multiple editing) |
+| *Ctrl+Shift+M* | select content into brackets |
+| *Ctrl+X* | delete line |
+| *Ctrl+KK* | delete from cursor to end of line |
+| *Ctrl+K+Backspace* | delete from cursor to start of line |
+| *Ctrl+Shift+D* | duplicate line(s) |
+| *Ctrl+J* | join lines |
+| *Ctrl+KU* | upper case |
+| *Ctrl+KL* | lower case |
+| *Ctrl+ /* | comment |
+| *Ctrl+Shift+/* | block comment |
+| *Ctrl+Y* | redo or repeat |
+| *Ctrl+Shift+V* | past and ident |
+| *Alt+/* | autocomplete (repeat to select next suggestion). Default is Ctrl+Space, but it always reserved for language change in Chinese Windows environment. |
+
+| *Ctrl+M* | jump to matching brackets |
+| *Ctrl+U* | soft undo (movement undo) |
+
+h2. Navigation/Goto Anywhere
+
+| *Ctrl+P* | goto anyway. Search files by name in your project.  |
+| *Ctrl+R* | goto symbol(functions and classes) in the file. Same as *Ctrl+P*, then type *@*|
+| *Ctrl+;* | goto word in current file. Same as *Ctrl+P*, then type *#*|
+| *Ctrl+G* | goto line in current file. Same as *Ctrl+P*, then type *:*|
+
+h2. Find/Replace
+
+| *Ctrl+F* | find |
+| *Ctrl+H* | replace |
+| *Ctrl+Shift+F* | find in files |
+
+h2. Splits/Tabs
+
+| *Alt+Shift+1* | single column |
+| *Alt+Shift+2* | two columns |
+| *Alt+Shift+5* | grid (4 groups) |
+| *Ctrl+[1,2,3,4]* | focus group |
+| *Ctrl+Shift+[1,2,3,4]* | move file to group |
+| *Ctrl+[1,2,3...]* | select tab |
+
+h2. Bookmarks
+
+| *Ctrl+F2* | toggle bookmark |
+| *F2* | next bookmark |
+| *Shift+F2* | previous bookmark |
+| *Ctrl+Shift+F2* | clear bookmarks |
+&lt;/code&gt;&lt;/pre&gt;
+    &lt;/noscript&gt;
+&lt;/div&gt;</summary><category term="Sublime Text"></category><category term="Fedora"></category></entry><entry><title>Reading CSV File With Javascript and HTML5 File API</title><link href="http://mounirmesselmeni.github.io/2012/11/20/reading-csv-file-with-javascript-and-html5-file-api/" rel="alternate"></link><updated>2012-11-20T20:43:00+01:00</updated><author><name>Mounir Messelmeni</name></author><id>tag:mounirmesselmeni.github.io,2012-11-20:2012/11/20/reading-csv-file-with-javascript-and-html5-file-api/</id><summary type="html">&lt;p&gt;In a specific project, the client want to read a &lt;span class="caps"&gt;CSV&lt;/span&gt; file, process and show data into an &lt;a href="http://openlayers.org/"&gt;OpenLayers&lt;/a&gt;&amp;nbsp;Map.&lt;/p&gt;
+&lt;p&gt;So it come in my mind to write a simple html/javascript application, without any backend&amp;nbsp;server.&lt;/p&gt;
+&lt;h2&gt;How to read a file via browser&amp;nbsp;?&lt;/h2&gt;
+&lt;p&gt;The unique constraint was how can I read the &lt;span class="caps"&gt;CSV&lt;/span&gt; file in&amp;nbsp;browser.&lt;/p&gt;
+&lt;p&gt;&lt;span class="caps"&gt;HTML5&lt;/span&gt; finally provides a standard way to interact with local files, via the &lt;a href="http://www.w3.org/TR/file-upload/"&gt;File &lt;span class="caps"&gt;API&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;We are going to use &lt;a href="http://dev.w3.org/2006/webapi/FileAPI/#dfn-filereader"&gt;FileReader&lt;/a&gt;&lt;/p&gt;
+&lt;!-- more --&gt;
+
+&lt;p&gt;First, let’s check if the browser support FileReader &lt;span class="caps"&gt;API&lt;/span&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;handleFiles&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;files&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="c1"&gt;// Check for the various File API support.&lt;/span&gt;
+      &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;window&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;FileReader&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+          &lt;span class="c1"&gt;// FileReader are supported.&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+          &lt;span class="nx"&gt;alert&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;FileReader are not supported in this browser.&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;How to read a file via browser&amp;nbsp;?&lt;/h2&gt;
+&lt;p&gt;To select a file we’re going to use a simple html &lt;code&gt;&amp;lt;input type="file"&amp;gt;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;We just call handleFile to make JavaScript returns the list of selected File objects but we are going to use only&amp;nbsp;one.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="nt"&gt;&amp;lt;script &lt;/span&gt;&lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text/javascript&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;src=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;static/js/read-csv.js&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;input&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;file&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;id=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;csvFileInput&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;onchange=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;handleFiles(this.files)&amp;quot;&lt;/span&gt;
+            &lt;span class="na"&gt;accept=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;.csv&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Reading the&amp;nbsp;File&lt;/h2&gt;
+&lt;p&gt;After we’ve obtained a File reference, we instantiate a FileReader object to read its contents into memory. When the load finishes, the reader’s onload event is fired and its result attribute can be used to access the file&amp;nbsp;data.&lt;/p&gt;
+&lt;p&gt;FileReader includes four options for reading a file, asynchronously:
+- &lt;code&gt;FileReader.readAsBinaryString(Blob|File)&lt;/code&gt; – The result property will contain the file/blob’s data as a binary string. Every byte is represented by an integer in the range [0..255].
+- &lt;code&gt;FileReader.readAsText(Blob|File, opt_encoding)&lt;/code&gt; – The result property will contain the file/blob’s data as a text string. By default the string is decoded as ‘&lt;span class="caps"&gt;UTF&lt;/span&gt;-8’. Use the optional encoding parameter can specify a different format.
+- &lt;code&gt;FileReader.readAsDataURL(Blob|File)&lt;/code&gt; – The result property will contain the file/blob’s data encoded as a data &lt;span class="caps"&gt;URL&lt;/span&gt;.
+- &lt;code&gt;FileReader.readAsArrayBuffer(Blob|File)&lt;/code&gt; – The result property will contain the file/blob’s data as an ArrayBuffer&amp;nbsp;object.&lt;/p&gt;
+&lt;p&gt;For our example, we want to read a &lt;span class="caps"&gt;CSV&lt;/span&gt; file, so we can read it as text. And perfom data processing after in &lt;code&gt;processData(csv)&lt;/code&gt; function.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;handleFiles&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;files&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="c1"&gt;// Check for the various File API support.&lt;/span&gt;
+      &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;window&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;FileReader&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+          &lt;span class="c1"&gt;// FileReader are supported.&lt;/span&gt;
+          &lt;span class="nx"&gt;getAsText&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;files&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]);&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+          &lt;span class="nx"&gt;alert&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;FileReader are not supported in this browser.&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;getAsText&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;fileToRead&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;reader&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nx"&gt;FileReader&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+      &lt;span class="c1"&gt;// Read file into memory as UTF-8      &lt;/span&gt;
+      &lt;span class="nx"&gt;reader&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;readAsText&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;fileToRead&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+      &lt;span class="c1"&gt;// Handle errors load&lt;/span&gt;
+      &lt;span class="nx"&gt;reader&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;onload&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;loadHandler&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+      &lt;span class="nx"&gt;reader&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;onerror&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;errorHandler&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;loadHandler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;event&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;csv&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;event&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;target&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;result&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+      &lt;span class="nx"&gt;processData&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;csv&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;processData&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;csv&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;allTextLines&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;csv&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="sr"&gt;/\r\n|\n/&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;lines&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[];&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nx"&gt;allTextLines&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;length&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;allTextLines&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="nx"&gt;split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+                &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;tarr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[];&lt;/span&gt;
+                &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;j&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nx"&gt;j&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;length&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nx"&gt;j&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                    &lt;span class="nx"&gt;tarr&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;push&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;j&lt;/span&gt;&lt;span class="p"&gt;]);&lt;/span&gt;
+                &lt;span class="p"&gt;}&lt;/span&gt;
+                &lt;span class="nx"&gt;lines&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;push&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;tarr&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+      &lt;span class="nx"&gt;console&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;log&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;lines&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;errorHandler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;evt&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;evt&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;target&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;error&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;NotReadableError&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+          &lt;span class="nx"&gt;alert&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Canno&amp;#39;t read file !&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;That’s&amp;nbsp;it.&lt;/p&gt;
+&lt;h3&gt;Resources&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://github.com/MounirMesselmeni/html-fileapi"&gt;Source code&lt;/a&gt; for this&amp;nbsp;article.&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="javascript"></category><category term="csv"></category><category term="fileapi"></category><category term="html5"></category></entry></feed>

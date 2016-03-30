@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Awesome notes</title><link href="http://mounirmesselmeni.github.io/" rel="alternate"></link><link href="http://mounirmesselmeni.github.io/feeds/linux.atom.xml" rel="self"></link><id>http://mounirmesselmeni.github.io/</id><updated>2013-12-03T00:49:00+01:00</updated><entry><title>Install vsftpd on Linux and configure nginx as webserver</title><link href="http://mounirmesselmeni.github.io/2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/" rel="alternate"></link><updated>2013-12-03T00:49:00+01:00</updated><author><name>Mounir Messelmeni</name></author><id>tag:mounirmesselmeni.github.io,2013-12-03:2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/</id><summary type="html">&lt;p&gt;In this tutorial we will create an &lt;span class="caps"&gt;FTP&lt;/span&gt; server in Redhat based distribution(Fedora, CentOS, Amazon Linux &lt;span class="caps"&gt;AMI&lt;/span&gt;, Redhat), this tutorial also can be applied for others distibution like Ubuntu or Debian, just change some configuration file location and some commands&amp;nbsp;syntax.&lt;/p&gt;
+&lt;p&gt;We will install &lt;a href="https://security.appspot.com/vsftpd.html"&gt;&lt;span class="caps"&gt;VSFTPD&lt;/span&gt;&lt;/a&gt; and &lt;a href="http://nginx.com/"&gt;Nginx&lt;/a&gt; to dispose uploaded data via &lt;span class="caps"&gt;FTP&lt;/span&gt; with&amp;nbsp;Nginx.&lt;/p&gt;
+&lt;!-- more --&gt;
+
+&lt;h3&gt;&lt;span class="caps"&gt;VSFTPD&lt;/span&gt;&amp;nbsp;Installation&lt;/h3&gt;
+&lt;p&gt;First of all, let&amp;#8217;s install vsftpd, an awesome &lt;span class="caps"&gt;FTP&lt;/span&gt; server very simple to&amp;nbsp;use.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    sudo yum install vsftpd
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Then, let&amp;#8217;s copy this configuration into &lt;code&gt;/etc/vsftpd/vsftpd.conf&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="nv"&gt;anonymous_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;NO
+    &lt;span class="nv"&gt;local_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;write_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;local_umask&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;022
+    &lt;span class="nv"&gt;dirmessage_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;xferlog_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;connect_from_port_20&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;NO
+    &lt;span class="nv"&gt;xferlog_file&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/var/log/vsftpd/vsftpd.log
+    &lt;span class="nv"&gt;xferlog_std_format&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;ftpd_banner&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;Welcome to FTP service
+    &lt;span class="nv"&gt;chroot_local_user&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;listen&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;pam_service_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;vsftpd
+    &lt;span class="nv"&gt;tcp_wrappers&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;userlist_file&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/etc/vsftpd/vsftpd.userlist
+    &lt;span class="nv"&gt;userlist_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;userlist_deny&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;NO
+    &lt;span class="nv"&gt;pasv_max_port&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;51000
+    &lt;span class="nv"&gt;pasv_min_port&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;50000
+    &lt;span class="nv"&gt;port_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;pasv_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;pasv_address&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YOUR_SERVER_URL
+    &lt;span class="nv"&gt;pasv_addr_resolve&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+    &lt;span class="nv"&gt;check_shell&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;NO
+    &lt;span class="nv"&gt;passwd_chroot_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;YES
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;As you see, in this configuration we had edited this&amp;nbsp;settings:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Disabling anonymous connections: &lt;code&gt;anonymous_enable=NO&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Creating a custom log folder: &lt;code&gt;/var/log/vsftpd/vsftpd.log&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Activating the custom log: &lt;code&gt;xferlog_std_format=YES&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Adding a custom welcome message to our &lt;span class="caps"&gt;FTP&lt;/span&gt; Server: &lt;code&gt;ftpd_banner=Welcome to FTP service&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Enabling local users: &lt;code&gt;userlist_enable=YES&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Specifying users list: &lt;code&gt;userlist_file=/etc/vsftpd/vsftpd.userlist&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Enabling users list: &lt;code&gt;userlist_enable=YES&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Specifying users list as authorized list: &lt;code&gt;userlist_deny=NO&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;The ftpuser should be able to write data: &lt;code&gt;write_enable=YES&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Set umask to 022 to make sure that all the files (644) and folders (755) you upload get the proper permissions: &lt;code&gt;local_umask=022&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Configure vsftpd to use ports 50000-51000 for passive data&amp;nbsp;transfers&lt;/li&gt;
+&lt;li&gt;Change &lt;code&gt;YOUR_SERVER_URL&lt;/code&gt; with the &lt;span class="caps"&gt;IP&lt;/span&gt; or domain name server, if you use &lt;span class="caps"&gt;IP&lt;/span&gt; you can change &lt;code&gt;pasv_addr_resolve&lt;/code&gt; to &lt;code&gt;NO&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Next, we should create the folder where data should be, make this folder the home directory of the ftp user we will create. And define a password for this&amp;nbsp;user.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    sudo mkdir -p /var/log/vsftpd/
+    sudo mkdir -p /var/www/ftp
+    sudo useradd -d /var/www/ftp/ -s /sbin/nologin ftp_user
+    sudo passwd ftp_user
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now, we add this user in the authorized users list, create a group named ftpusers and affect it to the ftp_user and make ftp_user own the ftp&amp;nbsp;directory.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    sudo &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;ftp_user&amp;quot;&lt;/span&gt; &amp;gt; /etc/vsftpd/vsftpd.userlist
+    sudo groupadd ftpusers
+    sudo usermod -G ftpusers ftp_user
+    sudo chown ftp_user /var/www/ftp/ -R
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Our Vsftpd server need to be restarted, we can also add it to start on boot with &lt;code&gt;chkconfig&lt;/code&gt;, just update your firewall configuration to add the port 21/tcp and port range&amp;nbsp;50000-51000/tcp.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    sudo chkconfig vsftpd on
+    sudo service vsftpd restart
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;You can test your server with ftp command or FileZilla&amp;nbsp;client.&lt;/p&gt;
+&lt;h3&gt;Nginx&amp;nbsp;Installation&lt;/h3&gt;
+&lt;p&gt;Let&amp;#8217;s install and configure Nginx to dispose our uploaded &lt;span class="caps"&gt;FTP&lt;/span&gt; data (&lt;span class="caps"&gt;HTML&lt;/span&gt;, Images,&amp;nbsp;&amp;#8230;).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    sudo yum install vsftpd
+    sudo chkconfig nginx --add
+    sudo chkconfig nginx on --level 235
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now, copy the following configuration into &lt;code&gt;/etc/nginx/conf.d/ftp.conf&lt;/code&gt; and start nginx service &lt;code&gt;sudo service nginx start&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;    &lt;span class="k"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="kn"&gt;listen&lt;/span&gt;        &lt;span class="mi"&gt;80&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+      &lt;span class="kn"&gt;server_name&lt;/span&gt;   &lt;span class="s"&gt;domain&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+      &lt;span class="kn"&gt;location&lt;/span&gt; &lt;span class="s"&gt;/&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="kn"&gt;autoindex&lt;/span&gt; &lt;span class="no"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="kn"&gt;root&lt;/span&gt;  &lt;span class="s"&gt;/var/www/ftp/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Finally, don&amp;#8217;t forget to add port 80 rule to your firewall&amp;nbsp;configuration.&lt;/p&gt;
+&lt;p&gt;That&amp;#8217;s all&amp;nbsp;!&lt;/p&gt;</summary><category term="Linux"></category><category term="Nginx"></category></entry></feed>

@@ -6,8 +6,21 @@
   <meta charset="utf-8">
   <meta name="author" content="Mounir Messelmeni">
 
-        <title>Tag: South &mdash; Awesome notes</title>
+          <title>Installing and using Sentry on your Django projects &mdash; Awesome notes</title>
         <meta charset="utf-8" />
+
+    <meta name="keywords" content="python" />
+    <meta name="keywords" content="django" />
+    <meta name="keywords" content="sentry" />
+    <meta name="keywords" content="logging" />
+    <meta name="keywords" content="server" />
+    <meta name="keywords" content="administration" />
+    <meta name="keywords" content="devops" />
+
+
+    <meta name="tags" content="Django" />
+    <meta name="tags" content="Python" />
+    <meta name="tags" content="Logging" />
 
 
   <!-- http://t.co/dKP3o1e -->
@@ -41,42 +54,91 @@
     <li >
     <a href="http://mounirmesselmeni.github.io/category/linux.html">Linux</a>
     </li>
-    <li >
+    <li class="active">
     <a href="http://mounirmesselmeni.github.io/category/web-development.html">Web development</a>
     </li>
 </ul></nav>
   <div id="main">
     <div id="content">
 <div>
-	<article role="article">
-    	<header>
-    		<h1 class="entry-title">Tag: South</h1>
-    	</header>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Installing and using Sentry on your Django projects</h1>
+    <p class="meta">
+<time datetime="2016-03-21T23:28:00+01:00" pubdate>Mon 21 March 2016</time>    </p>
+</header>
 
-    	<div id="blog-archives">
-            <h2>2013</h2>
-                    <article>
-                        <h1><a href="http://mounirmesselmeni.github.io/2013/07/28/migrate-django-manytomany-field-to-manytomany-through-with-south/">Migrate Django ManyToMany field to ManyToMany through with&nbsp;South</a></h1>
-                        <time datetime="2013-07-28 02:30:00+02:00" pubdate>
-                            <span class="month">Jul</span>
-                            <span class="day">28</span>
-                            <span class="year">2013</span>
-                        </time>
-                        <footer>
-                            <span class="categories">posted in
-                                <a class='category' href='http://mounirmesselmeni.github.io/category/web-development.html'>Web Development</a>
-                            </span>
-                        </footer>
-                    </article>
-	    </div>
-    </article>
+  <div class="entry-content"><p><a href="https://www.getsentry.com">Sentry</a> is a very known, stable and powerful logging tool built with Django, which enable
+an easy management for your application&nbsp;logging.</p>
+<p>If you&#8217;re a Django developer it&#8217;s really
+simple to use and will add a lot of benefits. Including organized logs supporting notifications
+by email, to your hipchat room&nbsp;&#8230;</p>
+<p>You can use the hosted version of Sentry or install it on your own server. On this tutorial
+we will install. Oh sorry, I think I have nothing to add on how to install it, just check <a href="https://docs.getsentry.com/on-premise/server/installation/">the official Sentry
+documentation</a> where you will find a simple and clear instruction on how to do&nbsp;this.</p>
+<p>I will just suggest some useful staff to use on&nbsp;production:</p>
+<ul>
+<li>
+<p>If you are familiar with Docker and would like to use it, you can check <a href="https://hub.docker.com/_/sentry/">this docker image for Sentry</a>.</p>
+</li>
+<li>
+<p>Run sentry-worker without -B, which mean running Celery beat, instead run it on another process, you can achieve
+that with another supervisor&nbsp;config.</p>
+</li>
+</ul>
+<div class="highlight"><pre>    <span class="o">[</span>program:sentry-cron<span class="o">]</span>
+    <span class="nv">directory</span><span class="o">=</span>/www/sentry/
+    <span class="nb">command</span><span class="o">=</span>/www/sentry/bin/sentry celery beat
+    <span class="nv">autostart</span><span class="o">=</span><span class="nb">true</span>
+<span class="nb">    </span><span class="nv">autorestart</span><span class="o">=</span><span class="nb">true</span>
+<span class="nb">    </span><span class="nv">redirect_stderr</span><span class="o">=</span><span class="nb">true</span>
+<span class="nb">    </span><span class="nv">killasgroup</span><span class="o">=</span><span class="nb">true</span>
+</pre></div>
+
+
+<ul>
+<li>Install and use <a href="https://www.rabbitmq.com/download.html">RabbitMQ</a> as broker instead of redis, specially if you have a large application which could lead
+to many logging, if you have a micro/small server, you can stick with&nbsp;Redis.</li>
+</ul></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">
+        Mounir Messelmeni
+    </span>
+  </span>
+<time datetime="2016-03-21T23:28:00+01:00" pubdate>Mon 21 March 2016</time>  <span class="categories">
+    <a class='category' href='http://mounirmesselmeni.github.io/category/web-development.html'>Web Development</a>
+  </span>
+  <span class="categories">
+    <a class="category" href="http://mounirmesselmeni.github.io/tag/django.html">Django</a>,    <a class="category" href="http://mounirmesselmeni.github.io/tag/python.html">Python</a>,    <a class="category" href="http://mounirmesselmeni.github.io/tag/logging.html">Logging</a>  </span>
+</p><div class="sharing">
+</div>    </footer>
+  </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
+  </section>
 </div>
 <aside class="sidebar">
   <section>
     <h1>Recent Posts</h1>
     <ul id="recent_posts">
       <li class="post">
-          <a href="http://mounirmesselmeni.github.io/2013/07/28/migrate-django-manytomany-field-to-manytomany-through-with-south/">Migrate Django ManyToMany field to ManyToMany through with South</a>
+          <a href="http://mounirmesselmeni.github.io/2016/03/21/how-to-order-a-calculated-count-field-in-djangos-admin/">How to order a calculated count field in Django’s admin</a>
+      </li>
+      <li class="post">
+          <a href="http://mounirmesselmeni.github.io/2016/03/21/installing-and-using-sentry-on-your-django-projects/">Installing and using Sentry on your Django projects</a>
+      </li>
+      <li class="post">
+          <a href="http://mounirmesselmeni.github.io/2015/12/13/enable-asciifolding-in-elasticsearchhaystack/">Enable Asciifolding in Elasticsearch/Haystack</a>
+      </li>
+      <li class="post">
+          <a href="http://mounirmesselmeni.github.io/2014/11/06/date-format-in-django-admin/">Date Format in Django Admin</a>
+      </li>
+      <li class="post">
+          <a href="http://mounirmesselmeni.github.io/2013/12/03/install-vsftpd-on-linux-and-configure-nginx-as-webserver/">Install vsftpd on Linux and configure nginx as webserver</a>
       </li>
     </ul>
   </section>
@@ -106,7 +168,7 @@
 </aside>    </div>
   </div>
   <footer role="contentinfo"><p>
-    Copyright &copy;  2013  Mounir Messelmeni &mdash;
+    Copyright &copy;  2012&ndash;2016  Mounir Messelmeni &mdash;
   <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
 </p></footer>
   <script src="http://mounirmesselmeni.github.io/theme/js/modernizr-2.0.js"></script>
@@ -132,6 +194,9 @@
 </script>
 	<script type="text/javascript">
 	  var disqus_shortname = 'mounir-blog';
+          var disqus_identifier = '/2016/03/21/installing-and-using-sentry-on-your-django-projects/';
+          var disqus_url = 'http://mounirmesselmeni.github.io/2016/03/21/installing-and-using-sentry-on-your-django-projects/';
+          var disqus_title = 'Installing and using Sentry on your Django&nbsp;projects';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
