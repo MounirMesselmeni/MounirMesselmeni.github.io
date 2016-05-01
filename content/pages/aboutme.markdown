@@ -10,6 +10,10 @@ I have been using Python and Django since 2013, and I must admit that I love wha
 this awesome toocv_mounir_messelmeni.pdfls, I attended DjangoCon Europe 2015 in Cardiff which was a very cool experience for me, specially
 knowing the community, discussing and seeing many Django contributors ...
 
+<div class="vimeo" align="center">
+    <iframe width="800" height="500" src="https://player.vimeo.com/video/134407590" frameborder="0"></iframe>
+</div>
+
 I also have been a very small Django contributor with [some small patches/fixes][1], I still don't find a lot find time
 to do more but I try my best.
 
