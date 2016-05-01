@@ -26,7 +26,7 @@ AUTHOR_FEED_RSS = None
 DEFAULT_PAGINATION = 10
 
 # Uncomment following line if you want document-relative URLs when developing
-#RELATIVE_URLS = True
+RELATIVE_URLS = True
 THEME = "pelican-octopress-theme"
 ARTICLE_URL = '{date:%Y}/{date:%m}/{date:%d}/{slug}/'
 ARTICLE_SAVE_AS = '{date:%Y}/{date:%m}/{date:%d}/{slug}/index.html'
@@ -38,9 +38,12 @@ GOOGLE_ANALYTICS = "UA-42132208-1"
 
 SOCIAL = (
     ('Linkedin', 'https://de.linkedin.com/in/mounirmesselmeni'),
-    ('Github', 'http://github.com/MounirMesselmeni'),)
+    ('Github', 'http://github.com/MounirMesselmeni'),
+    ('Stackoverflow', 'http://stackoverflow.com/users/935241/mounir'),
+)
 
 PLUGIN_PATHS = [os.path.join(BASE_DIR, 'pelican-plugins')]
 PLUGINS = ["assets", "liquid_tags", "sitemap", "pelican_gist"]
+STATIC_PATHS = ['images', 'pdfs']
 
 TYPOGRIFY = True
