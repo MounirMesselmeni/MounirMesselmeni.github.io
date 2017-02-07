@@ -1,0 +1,6 @@
+pip install -r requirements.txt
+git submodule update --init --recursive
+pelican content
+python -m pelican.server
+ghp-import output 
+git push origin gh-pages:master -f
