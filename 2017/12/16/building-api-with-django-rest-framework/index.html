@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="author" content="Mounir Messelmeni">
+
+          <title>Building API with Django rest framework &mdash; Awesome notes</title>
+        <meta charset="utf-8" />
+    <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-42132208-1']);
+    _gaq.push(['_trackPageview']);
+    (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-42132208-1');
+    ga('send', 'pageview');
+</script>
+
+    <meta name="keywords" content="python" />
+    <meta name="keywords" content="django" />
+    <meta name="keywords" content="api" />
+    <meta name="keywords" content="rest" />
+    <meta name="keywords" content="djangorestframework" />
+    <meta name="keywords" content="nested api" />
+    <meta name="keywords" content="nested routers" />
+    <meta name="keywords" content="nested routes" />
+    <meta name="keywords" content="nested serializers" />
+    <meta name="keywords" content="serializers" />
+    <meta name="keywords" content="drf" />
+    <meta name="keywords" content="endpoints" />
+    <meta name="keywords" content="authentication" />
+    <meta name="keywords" content="pagination" />
+    <meta name="keywords" content="filtering" />
+    <meta name="keywords" content="Token" />
+    <meta name="keywords" content="jwt" />
+
+
+    <meta name="tags" content="Python" />
+    <meta name="tags" content="Django" />
+    <meta name="tags" content="djangorestframework" />
+
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <link href="../../../../favicon.png" rel="icon">
+
+  <link href="../../../../theme/css/main.css" media="screen, projection"
+        rel="stylesheet" type="text/css">
+
+  <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic"
+        rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <header role="banner"><hgroup>
+  <h1><a href="../../../../">Awesome notes</a></h1>
+    <h2>We must learn to live together as brothers or perish together as fools. “Martin Luther King, Jr“</h2>
+</hgroup></header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+</ul>
+
+
+
+<ul class="main-navigation">
+      <li><a href="../../../../pages/about-me.html">About&nbsp;me</a></li>
+    <li >
+    <a href="../../../../category/android.html">Android</a>
+    </li>
+    <li >
+    <a href="../../../../category/linux.html">Linux</a>
+    </li>
+    <li class="active">
+    <a href="../../../../category/python.html">Python</a>
+    </li>
+    <li >
+    <a href="../../../../category/web-development.html">Web development</a>
+    </li>
+</ul></nav>
+  <div id="main">
+    <div id="content">
+<div>
+  <article class="hentry" role="article">
+<header>
+      <h1 class="entry-title">Building API with Django rest framework</h1>
+    <p class="meta">
+<time datetime="2017-12-16T15:00:00+01:00" pubdate>Sat 16 December 2017</time>    </p>
+</header>
+
+  <div class="entry-content"><p>I will try to demonstrate how easy it is to build simple and efficient APIs with <a href="http://www.django-rest-framework.org/">djangorestframework</a>.
+I will start from simple examples to more complicated&nbsp;ones.</p>
+<p>drf will mean&nbsp;djangorestframework</p>
+<h2>Project&nbsp;setup</h2>
+<p>We will use <a href="https://docs.pipenv.org/">pipenv</a> for installing our environment, let&#8217;s clone the base repo and run some more commands.
+The cool thing for using pipenv is also being charged for creating automatically&nbsp;virtualenv.</p>
+<div class="highlight"><pre>git clone -b minimal https://github.com/MounirMesselmeni/restframework-tutorial.git rest_tuto
+<span class="nb">cd </span>rest_tuto
+<span class="c"># installing pipenv as system package</span>
+pip install pipenv
+<span class="c"># installing project dependencies, use --python 3.6 if it&#39;s installed</span>
+pipenv install --python3
+<span class="c"># activating virtualenv via pipenv</span>
+pipenv shell
+<span class="c"># run migration</span>
+./manage.py migrate
+<span class="c"># create a superuser to play with your models via admin</span>
+./manage.py createsuperuser
+<span class="c"># run django server</span>
+./manage.py runserver
+</pre></div>
+
+
+<p>Now you can take a look inside <code>courses/models.py</code> to see how the models looks like.
+Go ahead in the admin and add some&nbsp;data.</p>
+<h2>Starting the <span class="caps">API</span></h2>
+<p>Let&#8217;s create first <span class="caps">API</span> endpoint and make sure it&#8217;s&nbsp;working</p>
+<p>Create new python module named&nbsp;api</p>
+<div class="highlight"><pre>mkdir api
+touch api/__init__.py
+touch api/serializers.py
+touch api/views.py
+touch api/urls.py
+</pre></div>
+
+
+<p>Create a serializer for Teacher model. In <code>api/serializers.py</code>
+Serializer will tell drf how to render/represent our data in a specific format (<span class="caps">HTML</span>, json, <span class="caps">XML</span>) and how to behave for parsing data from a specific format to Python (Both&nbsp;ways).</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">serializers</span>
+
+<span class="kn">from</span> <span class="nn">courses.models</span> <span class="kn">import</span> <span class="n">Teacher</span>
+
+
+<span class="k">class</span> <span class="nc">TeacherSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Teacher</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s">&#39;id&#39;</span><span class="p">,</span>
+            <span class="s">&#39;name&#39;</span><span class="p">,</span>
+            <span class="s">&#39;speciality&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+</pre></div>
+
+
+<p>We used <code>ModelSerializer</code>, it&#8217;s very similar to Django&#8217;s <code>ModelForm</code>, basically it&#8217;s a serializer for a model which help us write less code and generate fields based on the model fields including validations and field&nbsp;types.</p>
+<p>Now let&#8217;s use djangorestframeword viewsets, view sets make it possible to support <span class="caps">CRUD</span> operations within one&nbsp;endpoint:</p>
+<ul>
+<li>Create via <span class="caps">POST</span>&nbsp;requests</li>
+<li>Read via <span class="caps">GET</span>&nbsp;requests</li>
+<li>Update via <span class="caps">PUT</span>&nbsp;requests</li>
+<li>Delete via <span class="caps">DELETE</span>&nbsp;requests</li>
+</ul>
+<p>We can disable some if we do not need them, but let&#8217;s stick with all right&nbsp;now.</p>
+<p>Create first <a href="http://www.django-rest-framework.org/api-guide/viewsets/">viewset</a> in <code>api/views.py</code></p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">viewsets</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">courses</span> <span class="kn">import</span> <span class="n">models</span> <span class="k">as</span> <span class="n">courses_models</span>
+
+
+<span class="k">class</span> <span class="nc">TeacherViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">courses_models</span><span class="o">.</span><span class="n">Teacher</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">TeacherSerializer</span>
+</pre></div>
+
+
+<p>We have to specify a <code>queryset</code> for a <code>ViewSet</code>, it will also be the one used for listing teachers, so if we want to show only teachers with specific filter we can change&nbsp;that.</p>
+<p>Now, we will tell drf to publish our first endpoint or viewset, this can be done manually via adding this viewset to <code>urls.py</code> the Django way, but it&#8217;s better to use drf Routers for that. They will be useful, as for example they will generate url with parameter <span class="caps">ID</span> for retrieving a&nbsp;teacher.</p>
+<p>Let&#8217;s add this to <code>api.urls.py</code></p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">url</span><span class="p">,</span> <span class="n">include</span>
+<span class="kn">from</span> <span class="nn">rest_framework.routers</span> <span class="kn">import</span> <span class="n">DefaultRouter</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">views</span>
+
+<span class="n">router</span> <span class="o">=</span> <span class="n">DefaultRouter</span><span class="p">()</span>
+<span class="n">router</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">r&#39;teachers&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">TeacherViewSet</span><span class="p">)</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r&#39;^&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">router</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r&#39;^api-auth/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="s">&#39;rest_framework.urls&#39;</span><span class="p">,</span> <span class="n">namespace</span><span class="o">=</span><span class="s">&#39;rest_framework&#39;</span><span class="p">))</span>
+<span class="p">]</span>
+</pre></div>
+
+
+<p>Now we have to include api.urls inside our project main urls, <code>rest_tuto/urls.py</code></p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">include</span>
+<span class="kn">import</span> <span class="nn">api.urls</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">path</span><span class="p">(</span><span class="s">&#39;admin/&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">urls</span><span class="p">),</span>
+    <span class="n">path</span><span class="p">(</span><span class="s">&#39;api/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+<span class="p">]</span>
+</pre></div>
+
+
+<p>The api-auth is used for <span class="caps">API</span> authentication, we will deal with that later&nbsp;on.</p>
+<p>Now you can open your browser and go to <a href="http://localhost:8000/api/">http://localhost:8000/api/</a>
+This <span class="caps">HTML</span> you see is generated by drf, and it will list all endpoints we have, with your browser you&#8217;re seeing the <span class="caps">HTML</span> format but you can also view the json format by adding <code>?format=json</code> to the <span class="caps">URL</span>.</p>
+<p>Go the the teachers api and play with it, add some data via curl or drf html&nbsp;form.</p>
+<div class="highlight"><pre><span class="c"># Create teacher</span>
+curl -d <span class="s1">&#39;{&quot;name&quot;: &quot;John&quot;, &quot;speciality&quot;: &quot;Physics&quot;}&#39;</span> -H <span class="s2">&quot;Content-Type: application/json&quot;</span> -X POST http://localhost:8000/api/teachers/
+
+<span class="c"># List teachers</span>
+curl -X GET http://localhost:8000/api/teachers/
+
+<span class="c"># Get one teacher</span>
+curl -X GET http://localhost:8000/api/teachers/1/
+
+<span class="c"># Delete teacher</span>
+curl -X DELETE http://localhost:8000/api/teachers/1/
+
+<span class="c"># Create teacher another time</span>
+curl -d <span class="s1">&#39;{&quot;name&quot;: &quot;John&quot;, &quot;speciality&quot;: &quot;Physics&quot;}&#39;</span> -H <span class="s2">&quot;Content-Type: application/json&quot;</span> -X POST http://localhost:8000/api/teachers/
+
+<span class="c"># Update one teacher</span>
+curl -d <span class="s1">&#39;{&quot;name&quot;: &quot;John2&quot;, &quot;speciality&quot;: &quot;Physics&quot;}&#39;</span> -H <span class="s2">&quot;Content-Type: application/json&quot;</span> -X PUT http://localhost:8000/api/teachers/2/
+
+<span class="c"># Create teacher with missing data</span>
+curl -d <span class="s1">&#39;{&quot;speciality&quot;: &quot;Physics&quot;}&#39;</span> -H <span class="s2">&quot;Content-Type: application/json&quot;</span> -X POST http://localhost:8000/api/teachers/
+<span class="c"># Will complain and show errors in json</span>
+</pre></div>
+
+
+<p>Now we will play more with relationships, based in the models we have&nbsp;already.</p>
+<h2>Custom serializer&nbsp;method</h2>
+<p>This is useful for example for calculated fields, in case of student we have the birth date and we wanr to return the calculated age for each student. For this case we can use <a href="http://www.django-rest-framework.org/api-guide/fields/#serializermethodfield">drf serializer method field</a> <code>SerializerMethodField</code>.
+The default method name will be <code>get_fieldname</code> where fieldname is the name of your&nbsp;field.</p>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">StudentSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="n">age</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">SerializerMethodField</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_age</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">today</span><span class="o">.</span><span class="n">year</span> <span class="o">-</span> <span class="n">obj</span><span class="o">.</span><span class="n">birth_date</span><span class="o">.</span><span class="n">year</span> <span class="o">-</span> <span class="p">((</span><span class="n">today</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">today</span><span class="o">.</span><span class="n">day</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">birth_date</span><span class="o">.</span><span class="n">month</span><span class="p">,</span>
+                                                                            <span class="n">obj</span><span class="o">.</span><span class="n">birth_date</span><span class="o">.</span><span class="n">day</span><span class="p">))</span>
+        <span class="p">)</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Student</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s">&#39;id&#39;</span><span class="p">,</span>
+            <span class="s">&#39;name&#39;</span><span class="p">,</span>
+            <span class="s">&#39;birth_date&#39;</span><span class="p">,</span>
+            <span class="s">&#39;current_level&#39;</span><span class="p">,</span>
+            <span class="s">&#39;age&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+</pre></div>
+
+
+<p>Note that obj will be an instance of <code>Student</code> model.</p>
+<h2>Relatioships</h2>
+<p>By default drf will show related fields as IDs, if you want to embed whole object you will need to specify which serializer should be used. In case of many to many you have to pass which serializer with <code>many=True</code></p>
+<p>Let&#8217;s see how <code>CourseSeriliazer</code> should&nbsp;be:</p>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">CourseSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="n">teacher</span> <span class="o">=</span> <span class="n">TeacherSerializer</span><span class="p">()</span>
+    <span class="n">students</span> <span class="o">=</span> <span class="n">StudentSerializer</span><span class="p">(</span><span class="n">many</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Course</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s">&#39;id&#39;</span><span class="p">,</span>
+            <span class="s">&#39;name&#39;</span><span class="p">,</span>
+            <span class="s">&#39;teacher&#39;</span><span class="p">,</span>
+            <span class="s">&#39;level&#39;</span><span class="p">,</span>
+            <span class="s">&#39;students&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+</pre></div>
+
+
+<p>We used <code>read_only=True</code> to tell drf to use that field only while reading data, for creation this field will be ignored, if disabled drf will raise an exception when trying to post data complaining that you should deal on your own with m2m fields in the <code>perfom_create</code> method.</p>
+<p>Here an overview of how api app looks like right now, as it&#8217;s time to play around with&nbsp;it.</p>
+<p><code>api/serializers.py</code></p>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">serializers</span>
+
+<span class="kn">from</span> <span class="nn">courses.models</span> <span class="kn">import</span> <span class="n">Teacher</span><span class="p">,</span> <span class="n">Student</span><span class="p">,</span> <span class="n">Course</span>
+
+
+<span class="k">class</span> <span class="nc">TeacherSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Teacher</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s">&#39;id&#39;</span><span class="p">,</span>
+            <span class="s">&#39;name&#39;</span><span class="p">,</span>
+            <span class="s">&#39;speciality&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">StudentSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="n">age</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">SerializerMethodField</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_age</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">today</span><span class="o">.</span><span class="n">year</span> <span class="o">-</span> <span class="n">obj</span><span class="o">.</span><span class="n">birth_date</span><span class="o">.</span><span class="n">year</span> <span class="o">-</span> <span class="p">((</span><span class="n">today</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">today</span><span class="o">.</span><span class="n">day</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">birth_date</span><span class="o">.</span><span class="n">month</span><span class="p">,</span>
+                                                                            <span class="n">obj</span><span class="o">.</span><span class="n">birth_date</span><span class="o">.</span><span class="n">day</span><span class="p">))</span>
+        <span class="p">)</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Student</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s">&#39;id&#39;</span><span class="p">,</span>
+            <span class="s">&#39;name&#39;</span><span class="p">,</span>
+            <span class="s">&#39;birth_date&#39;</span><span class="p">,</span>
+            <span class="s">&#39;current_level&#39;</span><span class="p">,</span>
+            <span class="s">&#39;age&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">CourseSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="n">teacher</span> <span class="o">=</span> <span class="n">TeacherSerializer</span><span class="p">()</span>
+    <span class="n">students</span> <span class="o">=</span> <span class="n">StudentSerializer</span><span class="p">(</span><span class="n">many</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Course</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s">&#39;id&#39;</span><span class="p">,</span>
+            <span class="s">&#39;name&#39;</span><span class="p">,</span>
+            <span class="s">&#39;teacher&#39;</span><span class="p">,</span>
+            <span class="s">&#39;level&#39;</span><span class="p">,</span>
+            <span class="s">&#39;students&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+</pre></div>
+
+
+<p><code>api/views.py</code></p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">viewsets</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">courses</span> <span class="kn">import</span> <span class="n">models</span> <span class="k">as</span> <span class="n">courses_models</span>
+
+
+<span class="k">class</span> <span class="nc">TeacherViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">courses_models</span><span class="o">.</span><span class="n">Teacher</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">TeacherSerializer</span>
+
+
+<span class="k">class</span> <span class="nc">StudentViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">courses_models</span><span class="o">.</span><span class="n">Student</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">StudentSerializer</span>
+
+
+<span class="k">class</span> <span class="nc">CourseViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">courses_models</span><span class="o">.</span><span class="n">Course</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CourseSerializer</span>
+</pre></div>
+
+
+<p><code>api/urls.py</code></p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">url</span><span class="p">,</span> <span class="n">include</span>
+<span class="kn">from</span> <span class="nn">rest_framework.routers</span> <span class="kn">import</span> <span class="n">DefaultRouter</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">views</span>
+
+<span class="n">router</span> <span class="o">=</span> <span class="n">DefaultRouter</span><span class="p">()</span>
+<span class="n">router</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">r&#39;teachers&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">TeacherViewSet</span><span class="p">)</span>
+<span class="n">router</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">r&#39;students&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">StudentViewSet</span><span class="p">)</span>
+<span class="n">router</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">r&#39;courses&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">CourseViewSet</span><span class="p">)</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r&#39;^&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">router</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r&#39;^api-auth/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="s">&#39;rest_framework.urls&#39;</span><span class="p">,</span> <span class="n">namespace</span><span class="o">=</span><span class="s">&#39;rest_framework&#39;</span><span class="p">))</span>
+<span class="p">]</span>
+</pre></div>
+
+
+<h2>Filtering</h2>
+<p>We will use <a href="https://django-filter.readthedocs.io/en/1.1.0/">django-filter</a> to help us for quick filtering implementation, it&#8217;s already installed but let&#8217;s add it our&nbsp;INSTALLED_APPS</p>
+<div class="highlight"><pre><span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="o">...</span>
+    <span class="s">&#39;django_filters&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+
+
+<p>Now we can configure drf to use django-filter as our global filter backend, this can be also done per view level.
+Add this to your <code>settings.py</code></p>
+<div class="highlight"><pre><span class="n">REST_FRAMEWORK</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;DEFAULT_FILTER_BACKENDS&#39;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s">&#39;django_filters.rest_framework.DjangoFilterBackend&#39;</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Create a <code>api/filters.py</code> where we will add filtering for teacher&nbsp;endpoint</p>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">django_filters</span>
+<span class="kn">from</span> <span class="nn">django_filters</span> <span class="kn">import</span> <span class="n">rest_framework</span> <span class="k">as</span> <span class="n">filters</span>
+
+<span class="kn">from</span> <span class="nn">courses</span> <span class="kn">import</span> <span class="n">models</span> 
+
+<span class="k">class</span> <span class="nc">TeacherFilter</span><span class="p">(</span><span class="n">filters</span><span class="o">.</span><span class="n">FilterSet</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">django_filters</span><span class="o">.</span><span class="n">CharFilter</span><span class="p">(</span><span class="n">lookup_expr</span><span class="o">=</span><span class="s">&#39;icontains&#39;</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Teacher</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+</pre></div>
+
+
+<p>Last thing we need is to specify the <code>filter_class</code> to <code>TeacherViewSet</code></p>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">TeacherViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">courses_models</span><span class="o">.</span><span class="n">Teacher</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">TeacherSerializer</span>
+    <span class="n">filter_class</span> <span class="o">=</span> <span class="n">filters</span><span class="o">.</span><span class="n">TeacherFilter</span>
+</pre></div>
+
+
+<p><code>lookup_expr</code> will specify to django-filter which Django <span class="caps">ORM</span> lookup it will&nbsp;use.</p>
+<p>Let&#8217;s play with curl and&nbsp;see:</p>
+<div class="highlight"><pre>curl -X GET http://localhost:8000/api/teachers/<span class="se">\?</span>name<span class="se">\=</span>john
+</pre></div>
+
+
+<p>Now, we want to filter for students based on their age, we will need to use custom method filtering as we will calculate the right year to look for. For years difference we will need to install&nbsp;python-dateutil</p>
+<div class="highlight"><pre>pipenv install python-dateutil
+</pre></div>
+
+
+<p>Then modify our <code>filters.py</code>:</p>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">dateutil.relativedelta</span> <span class="kn">import</span> <span class="n">relativedelta</span>
+<span class="kn">import</span> <span class="nn">django_filters</span>
+<span class="kn">from</span> <span class="nn">django_filters</span> <span class="kn">import</span> <span class="n">rest_framework</span> <span class="k">as</span> <span class="n">filters</span>
+
+<span class="kn">from</span> <span class="nn">courses</span> <span class="kn">import</span> <span class="n">models</span> 
+
+<span class="k">class</span> <span class="nc">TeacherFilter</span><span class="p">(</span><span class="n">filters</span><span class="o">.</span><span class="n">FilterSet</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">django_filters</span><span class="o">.</span><span class="n">CharFilter</span><span class="p">(</span><span class="n">lookup_expr</span><span class="o">=</span><span class="s">&#39;icontains&#39;</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Teacher</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">StudentFilter</span><span class="p">(</span><span class="n">filters</span><span class="o">.</span><span class="n">FilterSet</span><span class="p">):</span>
+    <span class="n">age</span> <span class="o">=</span> <span class="n">django_filters</span><span class="o">.</span><span class="n">NumberFilter</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">&#39;age_filter&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">age_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+        <span class="n">age</span> <span class="o">=</span> <span class="p">(</span><span class="n">today</span> <span class="o">-</span> <span class="n">relativedelta</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="n">value</span><span class="p">))</span><span class="o">.</span><span class="n">year</span>
+        <span class="k">return</span> <span class="n">queryset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">birth_date__year</span><span class="o">=</span><span class="n">age</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Student</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;age&#39;</span><span class="p">]</span>
+</pre></div>
+
+
+<p>Let&#8217;s try it out, maybe you will need to add some students, via curl, drf forms, Django admin or Django&nbsp;shell</p>
+<div class="highlight"><pre>curl -X GET http://localhost:8000/api/students/?age<span class="o">=</span>20
+</pre></div>
+
+
+<h2>Pagination</h2>
+<p>Configure <a href="http://www.django-rest-framework.org/api-guide/pagination/">pagination</a> in <code>settings.py</code>, pagination can help when dealing with a lot of data, imagine we have a list of 10000 students, is will not be good to return this big list, we can return 100 per&nbsp;100.</p>
+<p>Be careful as pagination will modify the returned&nbsp;format:</p>
+<div class="highlight"><pre><span class="p">{</span>
+    <span class="nt">&quot;count&quot;</span><span class="p">:</span> <span class="mi">1023</span>
+    <span class="s2">&quot;next&quot;</span><span class="p">:</span> <span class="s2">&quot;https://api.example.org/accounts/?limit=100&amp;offset=500&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;previous&quot;</span><span class="p">:</span> <span class="s2">&quot;https://api.example.org/accounts/?limit=100&amp;offset=300&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;results&quot;</span><span class="p">:</span> <span class="p">[</span>
+       <span class="err">…</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span class="n">REST_FRAMEWORK</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;DEFAULT_FILTER_BACKENDS&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;django_filters.rest_framework.DjangoFilterBackend&#39;</span><span class="p">,),</span>
+    <span class="s">&#39;DEFAULT_PAGINATION_CLASS&#39;</span><span class="p">:</span> <span class="s">&#39;rest_framework.pagination.LimitOffsetPagination&#39;</span><span class="p">,</span>
+    <span class="s">&#39;PAGE_SIZE&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2>Authentication</h2>
+<p>It&#8217;s best to use session if you would like to use <span class="caps">DRF</span> build in <span class="caps">HTML</span> for testing and trying out the <span class="caps">API</span> endpoints.
+There are many <a href="http://www.django-rest-framework.org/api-guide/authentication">authentication backend</a> supported by <span class="caps">DRF</span>, there are also some other third party apps which provide more backend like <span class="caps">JWT</span> (<a href="https://github.com/GetBlimp/django-rest-framework-jwt">You can check</a>)</p>
+<p>We will now configure session and token authentication, let&#8217;s configure <span class="caps">DRF</span> in <code>settings.py</code></p>
+<div class="highlight"><pre><span class="n">REST_FRAMEWORK</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;DEFAULT_FILTER_BACKENDS&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;django_filters.rest_framework.DjangoFilterBackend&#39;</span><span class="p">,),</span>
+    <span class="s">&#39;DEFAULT_PAGINATION_CLASS&#39;</span><span class="p">:</span> <span class="s">&#39;rest_framework.pagination.LimitOffsetPagination&#39;</span><span class="p">,</span>
+    <span class="s">&#39;PAGE_SIZE&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s">&#39;DEFAULT_AUTHENTICATION_CLASSES&#39;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s">&#39;rest_framework.authentication.SessionAuthentication&#39;</span><span class="p">,</span>
+        <span class="s">&#39;rest_framework.authentication.TokenAuthentication&#39;</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Now we have to add <span class="caps">DRF</span> auth app to <code>INSTALLED_APPS</code></p>
+<div class="highlight"><pre><span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="o">...</span>
+    <span class="s">&#39;rest_framework.authtoken&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p>We can also expose an obtain token endpoint, where uses can send username/password and have their token back.
+To do so we have to modify <code>api/urls.py</code></p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">url</span><span class="p">,</span> <span class="n">include</span>
+<span class="kn">from</span> <span class="nn">rest_framework.routers</span> <span class="kn">import</span> <span class="n">DefaultRouter</span>
+<span class="kn">from</span> <span class="nn">rest_framework.authtoken.views</span> <span class="kn">import</span> <span class="n">obtain_auth_token</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">views</span>
+
+<span class="n">router</span> <span class="o">=</span> <span class="n">DefaultRouter</span><span class="p">()</span>
+<span class="n">router</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">r&#39;teachers&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">TeacherViewSet</span><span class="p">)</span>
+<span class="n">router</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">r&#39;students&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">StudentViewSet</span><span class="p">)</span>
+<span class="n">router</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">r&#39;courses&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">CourseViewSet</span><span class="p">)</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r&#39;^&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">router</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r&#39;^api-auth/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="s">&#39;rest_framework.urls&#39;</span><span class="p">,</span> <span class="n">namespace</span><span class="o">=</span><span class="s">&#39;rest_framework&#39;</span><span class="p">)),</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r&#39;^api-token-auth/&#39;</span><span class="p">,</span> <span class="n">obtain_auth_token</span><span class="p">),</span>
+<span class="p">]</span>
+</pre></div>
+
+
+<p>Now we have to run migrate to create token app&nbsp;tables:</p>
+<div class="highlight"><pre>./manage.py migrate
+</pre></div>
+
+
+<p>Let&#8217;s get the token via the obtain token&nbsp;view:</p>
+<div class="highlight"><pre>curl -X POST http://localhost:8000/api/api-token-auth/ <span class="se">\</span>
+-H <span class="s1">&#39;Content-type: application/json&#39;</span> <span class="se">\</span>
+-d <span class="s1">&#39;{&quot;username&quot;: &quot;admin&quot;, &quot;password&quot;: &quot;yourAdminPassword&quot;}&#39;</span>
+
+<span class="o">{</span><span class="s2">&quot;token&quot;</span>:<span class="s2">&quot;c98d345c4eeeb5529e184526b4f3effbc8957251&quot;</span><span class="o">}</span>%
+</pre></div>
+
+
+<p>We can now turn on permission, we can setup permission per view/viewset level or globally via <code>settings.py</code></p>
+<div class="highlight"><pre><span class="n">REST_FRAMEWORK</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;DEFAULT_FILTER_BACKENDS&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;django_filters.rest_framework.DjangoFilterBackend&#39;</span><span class="p">,),</span>
+    <span class="s">&#39;DEFAULT_PAGINATION_CLASS&#39;</span><span class="p">:</span> <span class="s">&#39;rest_framework.pagination.LimitOffsetPagination&#39;</span><span class="p">,</span>
+    <span class="s">&#39;PAGE_SIZE&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s">&#39;DEFAULT_AUTHENTICATION_CLASSES&#39;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s">&#39;rest_framework.authentication.SessionAuthentication&#39;</span><span class="p">,</span>
+        <span class="s">&#39;rest_framework.authentication.TokenAuthentication&#39;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s">&#39;DEFAULT_PERMISSION_CLASSES&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;rest_framework.permissions.IsAuthenticated&#39;</span><span class="p">,),</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>We still can override permission per view level if we want.
+Let&#8217;s see if curl call will return a 403 status&nbsp;code</p>
+<div class="highlight"><pre>curl -X GET http://localhost:8000/api/teachers/<span class="se">\?</span>name<span class="se">\=</span>john                                                                        
+<span class="o">{</span><span class="s2">&quot;detail&quot;</span>:<span class="s2">&quot;Authentication credentials were not provided.&quot;</span><span class="o">}</span>%
+</pre></div>
+
+
+<p>Now we should provide the token which we got as header:
+<code>Authorization: Token c98d345c4eeeb5529e184526b4f3effbc8957251</code>
+Do not forget to replace c98d345c4eeeb5529e184526b4f3effbc8957251 by your local&nbsp;token</p>
+<div class="highlight"><pre>curl -H <span class="s1">&#39;Authorization: Token c98d345c4eeeb5529e184526b4f3effbc8957251&#39;</span> -X GET http://localhost:8000/api/teachers/<span class="se">\?</span>name<span class="se">\=</span>john
+
+<span class="o">{</span><span class="s2">&quot;count&quot;</span>:4,<span class="s2">&quot;next&quot;</span>:null,<span class="s2">&quot;previous&quot;</span>:null,<span class="s2">&quot;results&quot;</span>:<span class="o">[{</span><span class="s2">&quot;id&quot;</span>:2,<span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;John2&quot;</span>,<span class="s2">&quot;speciality&quot;</span>:<span class="s2">&quot;Physics&quot;</span><span class="o">}</span>,<span class="o">{</span><span class="s2">&quot;id&quot;</span>:3,<span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;John&quot;</span>,<span class="s2">&quot;speciality&quot;</span>:<span class="s2">&quot;Physics&quot;</span><span class="o">}</span>,<span class="o">{</span><span class="s2">&quot;id&quot;</span>:4,<span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;John&quot;</span>,<span class="s2">&quot;speciality&quot;</span>:<span class="s2">&quot;Physics&quot;</span><span class="o">}</span>,<span class="o">{</span><span class="s2">&quot;id&quot;</span>:5,<span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;John&quot;</span>,<span class="s2">&quot;speciality&quot;</span>:<span class="s2">&quot;Physics&quot;</span><span class="o">}]}</span>%
+</pre></div>
+
+
+<h2>Nested <span class="caps">API</span></h2>
+<p>We will use drf-extension to add nested support. We will be able to list all courses of a teachers directly via the teacher detail endpoint /api/teacher/1/courses/
+I&#8217;m not using this too often as I prefer to use flat endpoints, but sometime it may be requested and I will show how it&#8217;s possible and&nbsp;easy.</p>
+<p>We will install <a href="https://github.com/chibisov/drf-extensions">drf-extensions</a> which have a bunch of helpers, we will need right now the nested&nbsp;router.</p>
+<div class="highlight"><pre>pipenv install git+https://github.com/chibisov/drf-extensions.git@master#egg<span class="o">=</span>drf_extensions
+</pre></div>
+
+
+<p><span class="caps">PS</span>: Until the time of writing this, drf-extension official release does not support Django 2.0. that&#8217;s why we are using the master branch directly from github. You may not need to use git link as soon as a new version will be released (&gt;&nbsp;0.3.1)</p>
+<p>Let&#8217;s modify <code>api.urls.py</code></p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">url</span><span class="p">,</span> <span class="n">include</span>
+<span class="kn">from</span> <span class="nn">rest_framework_extensions.routers</span> <span class="kn">import</span> <span class="n">ExtendedDefaultRouter</span>
+<span class="kn">from</span> <span class="nn">rest_framework.authtoken.views</span> <span class="kn">import</span> <span class="n">obtain_auth_token</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">views</span>
+
+<span class="n">router</span> <span class="o">=</span> <span class="n">ExtendedDefaultRouter</span><span class="p">()</span>
+<span class="n">router</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">r&#39;teachers&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">TeacherViewSet</span><span class="p">)</span><span class="o">.</span><span class="n">register</span><span class="p">(</span>
+    <span class="s">r&#39;courses&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">CourseViewSet</span><span class="p">,</span> <span class="n">base_name</span><span class="o">=</span><span class="s">&#39;courses&#39;</span><span class="p">,</span> <span class="n">parents_query_lookups</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;teacher&#39;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">router</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">r&#39;students&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">StudentViewSet</span><span class="p">)</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r&#39;^&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">router</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r&#39;^api-auth/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="s">&#39;rest_framework.urls&#39;</span><span class="p">,</span> <span class="n">namespace</span><span class="o">=</span><span class="s">&#39;rest_framework&#39;</span><span class="p">)),</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r&#39;^api-token-auth/&#39;</span><span class="p">,</span> <span class="n">obtain_auth_token</span><span class="p">),</span>
+<span class="p">]</span>
+</pre></div>
+
+
+<p>As you see, we can chain router registrations, keep in mind this is only supported for reading, for creation you will need to do a bit more to get for example the current teacher while creating a new&nbsp;course.</p>
+<p>And then <code>api/views/py</code> to add <code>NestedViewSetMixin</code> to our&nbsp;viewsets</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">viewsets</span>
+<span class="kn">from</span> <span class="nn">rest_framework_extensions.mixins</span> <span class="kn">import</span> <span class="n">NestedViewSetMixin</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">filters</span>
+<span class="kn">from</span> <span class="nn">courses</span> <span class="kn">import</span> <span class="n">models</span> <span class="k">as</span> <span class="n">courses_models</span>
+
+
+<span class="k">class</span> <span class="nc">TeacherViewSet</span><span class="p">(</span><span class="n">NestedViewSetMixin</span><span class="p">,</span> <span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">courses_models</span><span class="o">.</span><span class="n">Teacher</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">TeacherSerializer</span>
+    <span class="n">filter_class</span> <span class="o">=</span> <span class="n">filters</span><span class="o">.</span><span class="n">TeacherFilter</span>
+
+
+<span class="k">class</span> <span class="nc">StudentViewSet</span><span class="p">(</span><span class="n">NestedViewSetMixin</span><span class="p">,</span> <span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">courses_models</span><span class="o">.</span><span class="n">Student</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">StudentSerializer</span>
+    <span class="n">filter_class</span> <span class="o">=</span> <span class="n">filters</span><span class="o">.</span><span class="n">StudentFilter</span>
+
+
+<span class="k">class</span> <span class="nc">CourseViewSet</span><span class="p">(</span><span class="n">NestedViewSetMixin</span><span class="p">,</span> <span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">courses_models</span><span class="o">.</span><span class="n">Course</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CourseSerializer</span>
+</pre></div>
+
+
+<p>Now you can try <code>/api/teachers/1/courses/</code></p>
+<div class="highlight"><pre>curl -H <span class="s1">&#39;Authorization: Token c98d345c4eeeb5529e184526b4f3effbc8957251&#39;</span> -X GET http://localhost:8000/api/teachers/1/courses/
+
+<span class="o">{</span><span class="s2">&quot;count&quot;</span>:1,<span class="s2">&quot;next&quot;</span>:null,<span class="s2">&quot;previous&quot;</span>:null,<span class="s2">&quot;results&quot;</span>:<span class="o">[{</span><span class="s2">&quot;id&quot;</span>:1,<span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;c1&quot;</span>,<span class="s2">&quot;teacher&quot;</span>:<span class="o">{</span><span class="s2">&quot;id&quot;</span>:1,<span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;Mounir Messelmeni&quot;</span>,<span class="s2">&quot;speciality&quot;</span>:<span class="s2">&quot;Python&quot;</span><span class="o">}</span>,<span class="s2">&quot;level&quot;</span>:2,<span class="s2">&quot;students&quot;</span>:<span class="o">[{</span><span class="s2">&quot;id&quot;</span>:1,<span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;John Wick&quot;</span>,<span class="s2">&quot;birth_date&quot;</span>:<span class="s2">&quot;1990-02-14&quot;</span>,<span class="s2">&quot;current_level&quot;</span>:3,<span class="s2">&quot;age&quot;</span>:27<span class="o">}</span>,<span class="o">{</span><span class="s2">&quot;id&quot;</span>:2,<span class="s2">&quot;name&quot;</span>:<span class="s2">&quot;JN&quot;</span>,<span class="s2">&quot;birth_date&quot;</span>:<span class="s2">&quot;2017-12-15&quot;</span>,<span class="s2">&quot;current_level&quot;</span>:2,<span class="s2">&quot;age&quot;</span>:0<span class="o">}]}]}</span>% 
+</pre></div>
+
+
+<h2>Show only user (Student) involved courses and&nbsp;teachers</h2>
+<p>Coming&nbsp;soon</p>
+<h2>Many to Many with creation&nbsp;support</h2>
+<p>Coming&nbsp;soon</p>
+<h2><span class="caps">API</span>&nbsp;versionning</h2>
+<p>Coming&nbsp;soon</p>
+<h2>Testing your <span class="caps">API</span></h2>
+<p>Coming&nbsp;soon</p></div>
+    <footer>
+<p class="meta">
+  <span class="byline author vcard">
+    Posted by <span class="fn">
+        Mounir Messelmeni
+    </span>
+  </span>
+<time datetime="2017-12-16T15:00:00+01:00" pubdate>Sat 16 December 2017</time>  <span class="categories">
+    <a class='category' href='../../../../category/python.html'>Python</a>
+  </span>
+  <span class="categories">
+    <a class="category" href="../../../../tag/python.html">Python</a>,    <a class="category" href="../../../../tag/django.html">Django</a>,    <a class="category" href="../../../../tag/djangorestframework.html">djangorestframework</a>  </span>
+</p><div class="sharing">
+</div>    </footer>
+  </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div>
+  </section>
+</div>
+<aside class="sidebar">
+  <section>
+    <h1>Recent Posts</h1>
+    <ul id="recent_posts">
+      <li class="post">
+          <a href="../../../../2017/12/16/building-api-with-django-rest-framework/">Building API with Django rest framework</a>
+      </li>
+      <li class="post">
+          <a href="../../../../2017/03/01/ordering-a-python-list-the-simple-way/">Ordering a python list -> the simple way</a>
+      </li>
+      <li class="post">
+          <a href="../../../../2017/02/25/installing-oxygen-os-on-oneplus-one/">Installing Oxygen OS on OnePlus One</a>
+      </li>
+      <li class="post">
+          <a href="../../../../2017/02/06/accessing-prefetched-objects-inside-your-models-methods/">Accessing prefetched objects inside your model’s methods</a>
+      </li>
+      <li class="post">
+          <a href="../../../../2016/03/21/how-to-order-a-calculated-count-field-in-djangos-admin/">How to order a calculated count field in Django’s admin</a>
+      </li>
+    </ul>
+  </section>
+  <section>
+      
+    <h1>Categories</h1>
+    <ul id="recent_posts">
+        <li><a href="../../../../category/android.html">Android</a></li>
+        <li><a href="../../../../category/linux.html">Linux</a></li>
+        <li><a href="../../../../category/python.html">Python</a></li>
+        <li><a href="../../../../category/web-development.html">Web Development</a></li>
+    </ul>
+  </section>
+ 
+
+  <section>
+  <h1>Tags</h1>
+    <a href="../../../../tag/python.html">Python</a>,    <a href="../../../../tag/django.html">Django</a>,    <a href="../../../../tag/djangorestframework.html">djangorestframework</a>,    <a href="../../../../tag/android.html">Android</a>,    <a href="../../../../tag/django-orm.html">Django ORM</a>,    <a href="../../../../tag/django-admin.html">Django Admin</a>,    <a href="../../../../tag/logging.html">Logging</a>,    <a href="../../../../tag/haystack.html">Haystack</a>,    <a href="../../../../tag/elasticsearch.html">elasticsearch</a>,    <a href="../../../../tag/linux.html">Linux</a>,    <a href="../../../../tag/nginx.html">Nginx</a>,    <a href="../../../../tag/custom-fields.html">Custom Fields</a>,    <a href="../../../../tag/south.html">South</a>,    <a href="../../../../tag/migration.html">Migration</a>,    <a href="../../../../tag/javascript.html">javascript</a>,    <a href="../../../../tag/angularjs.html">AngularJS</a>,    <a href="../../../../tag/stackoverflow-api.html">Stackoverflow API</a>,    <a href="../../../../tag/sublime-text.html">Sublime Text</a>,    <a href="../../../../tag/fedora.html">Fedora</a>,    <a href="../../../../tag/csv.html">csv</a>,    <a href="../../../../tag/fileapi.html">fileapi</a>,    <a href="../../../../tag/html5.html">html5</a>  </section>
+
+
+    <section>
+        <h1>Social</h1>
+        <ul>
+            <li><a href="https://de.linkedin.com/in/mounirmesselmeni" target="_blank">Linkedin</a></li>
+            <li><a href="http://github.com/MounirMesselmeni" target="_blank">Github</a></li>
+            <li><a href="http://stackoverflow.com/users/935241/mounir" target="_blank">Stackoverflow</a></li>
+        </ul>
+    </section>
+
+</aside>    </div>
+  </div>
+  <footer role="contentinfo"><p>
+    Copyright &copy;  2012&ndash;2017  Mounir Messelmeni &mdash;
+  <span class="credit">Powered by <a href="http://getpelican.com">Pelican</a></span>
+</p></footer>
+  <script src="../../../../theme/js/modernizr-2.0.js"></script>
+  <script src="../../../../theme/js/ender.js"></script>
+  <script src="../../../../theme/js/octopress.js" type="text/javascript"></script>
+	<script type="text/javascript">
+	  var disqus_shortname = 'mounir-blog';
+          var disqus_identifier = '/2017/12/16/building-api-with-django-rest-framework/';
+          var disqus_url = 'http://mounirmesselmeni.github.io/2017/12/16/building-api-with-django-rest-framework/';
+          var disqus_title = 'Building <span class="caps">API</span> with Django rest&nbsp;framework';
+	  (function() {
+	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+	    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	   })();
+	</script>
+</body>
+</html>

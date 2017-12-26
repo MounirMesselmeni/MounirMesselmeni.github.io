@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="author" content="Mounir Messelmeni">
 
-          <title>How to order a calculated count field in Django’s admin &mdash; Awesome notes</title>
+          <title>Accessing prefetched objects inside your model’s methods &mdash; Awesome notes</title>
         <meta charset="utf-8" />
     <script type="text/javascript">
     var _gaq = _gaq || [];
@@ -29,19 +29,19 @@
 
     <meta name="keywords" content="python" />
     <meta name="keywords" content="django" />
-    <meta name="keywords" content="admin" />
-    <meta name="keywords" content="django admin" />
-    <meta name="keywords" content="order" />
-    <meta name="keywords" content="ordering" />
-    <meta name="keywords" content="count" />
-    <meta name="keywords" content="annotate" />
+    <meta name="keywords" content="django orm" />
+    <meta name="keywords" content="prefetch_related" />
+    <meta name="keywords" content="select_related" />
+    <meta name="keywords" content="model" />
     <meta name="keywords" content="queryset" />
-    <meta name="keywords" content="modeladmin" />
+    <meta name="keywords" content="methods" />
+    <meta name="keywords" content="bussiness logic" />
+    <meta name="keywords" content="dry" />
 
 
     <meta name="tags" content="Django" />
     <meta name="tags" content="Python" />
-    <meta name="tags" content="Django Admin" />
+    <meta name="tags" content="Django ORM" />
 
 
   <!-- http://t.co/dKP3o1e -->
@@ -91,42 +91,54 @@
 <div>
   <article class="hentry" role="article">
 <header>
-      <h1 class="entry-title">How to order a calculated count field in Django’s admin</h1>
+      <h1 class="entry-title">Accessing prefetched objects inside your model’s methods</h1>
     <p class="meta">
-<time datetime="2016-03-21T23:28:00+01:00" pubdate>Mon 21 March 2016</time>    </p>
+<time datetime="2017-02-06T23:28:00+01:00" pubdate>Mon 06 February 2017</time>    </p>
 </header>
 
-  <div class="entry-content"><p>You can easily add a field which count a specific related model from a reverse <code>ForeignKey</code> relation or 
-a <code>ManyToMany</code> relation, but ordering this field could not be easy from the first&nbsp;time.</p>
-<p>Here we will see how to use annotate to add this field and how to order it. You only have to define <code>admin_order_field</code>
-as in the&nbsp;following.</p>
+  <div class="entry-content"><p>I had many time the need to optimize some perfomance issues with some <span class="caps">ORM</span> queries, then many times the <a href="https://docs.djangoproject.com/en/1.10/ref/models/querysets/#prefetch-related">prefetch_related</a> and <a href="https://docs.djangoproject.com/en/1.10/ref/models/querysets/#select-related">select_related</a> were my best friends for this topic. But when calling some business logic which reside in some model&#8217;s methods which try to calculate or to fetch some related model data the optimization will not have any effect as these method are using <code>filter</code> or some queryset aggregations <code>Sum</code> or <code>Count</code> &#8230;</p>
+<p>The solution to this problem is either to redefine the logic to use prefetched data or more clean to make these methods now if there already prefeteched objects, that&#8217;s the best solution in my&nbsp;cases:</p>
 <p>A basic models example <code>models.py</code>:</p>
 <div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Teacher</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
 
+        <span class="k">def</span> <span class="nf">students_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">student_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">age__gte</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
     <span class="k">class</span> <span class="nc">Student</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
         <span class="n">teacher</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Teacher</span><span class="p">)</span>
+        <span class="n">age</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 
 
-<p>And the <code>admin.py</code></p>
-<div class="highlight"><pre>    <span class="nd">@admin.register</span><span class="p">(</span><span class="n">Teacher</span><span class="p">)</span>
-    <span class="k">class</span> <span class="nc">TeacherAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
-        <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s">&#39;id&#39;</span><span class="p">,</span>
-            <span class="s">&#39;students_count&#39;</span><span class="p">,</span>
-        <span class="p">)</span>
+<div class="highlight"><pre>    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">Teacher</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">teacher</span><span class="o">.</span><span class="n">students_count</span><span class="p">())</span>
+    <span class="c"># This will results to the number of teachers + 1 SQL queries</span>
+</pre></div>
 
-        <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">Teacher</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">students_count</span><span class="o">=</span><span class="n">Count</span><span class="p">(</span><span class="s">&#39;student&#39;</span><span class="p">))</span>
 
-        <span class="k">def</span> <span class="nf">students_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">students_count</span>
+<p>Let&#8217;s use <code>prefetch_related</code>:</p>
+<div class="highlight"><pre>    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">Teacher</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span><span class="s">&#39;student_set&#39;</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">teacher</span><span class="o">.</span><span class="n">students_count</span><span class="p">())</span>
+    <span class="c"># Our prefetch have no effect as the method students_count is using filter which</span>
+    <span class="c"># will ignore the prefetched objects</span>
+</pre></div>
 
-        <span class="n">students_count</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Students count&#39;</span><span class="p">)</span>
-        <span class="n">students_count</span><span class="o">.</span><span class="n">admin_order_field</span> <span class="o">=</span> <span class="s">&#39;students_count&#39;</span>
-</pre></div></div>
+
+<p>We have to fix the method <code>students_count</code> to consider checking for prefetched&nbsp;objects:</p>
+<div class="highlight"><pre>    <span class="k">class</span> <span class="nc">Teacher</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">students_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_prefetched_objects_cache&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="s">&#39;student&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefetched_objects_cache</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">len</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">student_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">age</span> <span class="o">&gt;=</span> <span class="mi">20</span><span class="p">])</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">student_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">age__gte</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+</pre></div>
+
+
+<p>This way even calling <code>students_count</code> in a single instance without calling <code>prefetch_related</code> on the queryset will use the filter instead of the prefetched, this can be useful in many cases but I better to use this only when you need&nbsp;to.</p>
+<p>Thanks for&nbsp;reading</p></div>
     <footer>
 <p class="meta">
   <span class="byline author vcard">
@@ -134,11 +146,11 @@ as in the&nbsp;following.</p>
         Mounir Messelmeni
     </span>
   </span>
-<time datetime="2016-03-21T23:28:00+01:00" pubdate>Mon 21 March 2016</time>  <span class="categories">
+<time datetime="2017-02-06T23:28:00+01:00" pubdate>Mon 06 February 2017</time>  <span class="categories">
     <a class='category' href='../../../../category/web-development.html'>Web Development</a>
   </span>
   <span class="categories">
-    <a class="category" href="../../../../tag/django.html">Django</a>,    <a class="category" href="../../../../tag/python.html">Python</a>,    <a class="category" href="../../../../tag/django-admin.html">Django Admin</a>  </span>
+    <a class="category" href="../../../../tag/django.html">Django</a>,    <a class="category" href="../../../../tag/python.html">Python</a>,    <a class="category" href="../../../../tag/django-orm.html">Django ORM</a>  </span>
 </p><div class="sharing">
 </div>    </footer>
   </article>
@@ -206,9 +218,9 @@ as in the&nbsp;following.</p>
   <script src="../../../../theme/js/octopress.js" type="text/javascript"></script>
 	<script type="text/javascript">
 	  var disqus_shortname = 'mounir-blog';
-          var disqus_identifier = '/2016/03/21/how-to-order-a-calculated-count-field-in-djangos-admin/';
-          var disqus_url = 'http://mounirmesselmeni.github.io/2016/03/21/how-to-order-a-calculated-count-field-in-djangos-admin/';
-          var disqus_title = 'How to order a calculated count field in Django&#8217;s&nbsp;admin';
+          var disqus_identifier = '/2017/02/06/accessing-prefetched-objects-inside-your-models-methods/';
+          var disqus_url = 'http://mounirmesselmeni.github.io/2017/02/06/accessing-prefetched-objects-inside-your-models-methods/';
+          var disqus_title = 'Accessing prefetched objects inside your model&#8217;s&nbsp;methods';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';

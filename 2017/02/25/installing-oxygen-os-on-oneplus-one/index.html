@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="author" content="Mounir Messelmeni">
 
-          <title>Installing and using Sentry on your Django projects &mdash; Awesome notes</title>
+          <title>Installing Oxygen OS on OnePlus One &mdash; Awesome notes</title>
         <meta charset="utf-8" />
     <script type="text/javascript">
     var _gaq = _gaq || [];
@@ -27,18 +27,16 @@
     ga('send', 'pageview');
 </script>
 
-    <meta name="keywords" content="python" />
-    <meta name="keywords" content="django" />
-    <meta name="keywords" content="sentry" />
-    <meta name="keywords" content="logging" />
-    <meta name="keywords" content="server" />
-    <meta name="keywords" content="administration" />
-    <meta name="keywords" content="devops" />
+    <meta name="keywords" content="oneplus" />
+    <meta name="keywords" content="oneplus one" />
+    <meta name="keywords" content="oxygenos" />
+    <meta name="keywords" content="ubuntu" />
+    <meta name="keywords" content="linux" />
+    <meta name="keywords" content="adb" />
+    <meta name="keywords" content="fastboot" />
 
 
-    <meta name="tags" content="Django" />
-    <meta name="tags" content="Python" />
-    <meta name="tags" content="Logging" />
+    <meta name="tags" content="Android" />
 
 
   <!-- http://t.co/dKP3o1e -->
@@ -70,7 +68,7 @@
 
 <ul class="main-navigation">
       <li><a href="../../../../pages/about-me.html">About&nbsp;me</a></li>
-    <li >
+    <li class="active">
     <a href="../../../../category/android.html">Android</a>
     </li>
     <li >
@@ -79,7 +77,7 @@
     <li >
     <a href="../../../../category/python.html">Python</a>
     </li>
-    <li class="active">
+    <li >
     <a href="../../../../category/web-development.html">Web development</a>
     </li>
 </ul></nav>
@@ -88,43 +86,56 @@
 <div>
   <article class="hentry" role="article">
 <header>
-      <h1 class="entry-title">Installing and using Sentry on your Django projects</h1>
+      <h1 class="entry-title">Installing Oxygen OS on OnePlus One</h1>
     <p class="meta">
-<time datetime="2016-03-21T23:28:00+01:00" pubdate>Mon 21 March 2016</time>    </p>
+<time datetime="2017-02-25T11:28:00+01:00" pubdate>Sat 25 February 2017</time>    </p>
 </header>
 
-  <div class="entry-content"><p><a href="https://www.getsentry.com">Sentry</a> is a very known, stable and powerful logging tool built with Django, which enable
-an easy management for your application&nbsp;logging.</p>
-<p>If you&#8217;re a Django developer it&#8217;s really
-simple to use and will add a lot of benefits. Including organized logs supporting notifications
-by email, to your hipchat room&nbsp;&#8230;</p>
-<p>You can use the hosted version of Sentry or install it on your own server. On this tutorial
-we will install. Oh sorry, I think I have nothing to add on how to install it, just check <a href="https://docs.getsentry.com/on-premise/server/installation/">the official Sentry
-documentation</a> where you will find a simple and clear instruction on how to do&nbsp;this.</p>
-<p>I will just suggest some useful staff to use on&nbsp;production:</p>
-<ul>
-<li>
-<p>If you are familiar with Docker and would like to use it, you can check <a href="https://hub.docker.com/_/sentry/">this docker image for Sentry</a>.</p>
-</li>
-<li>
-<p>Run sentry-worker without -B, which mean running Celery beat, instead run it on another process, you can achieve
-that with another supervisor&nbsp;config.</p>
-</li>
-</ul>
-<div class="highlight"><pre>    <span class="o">[</span>program:sentry-cron<span class="o">]</span>
-    <span class="nv">directory</span><span class="o">=</span>/www/sentry/
-    <span class="nb">command</span><span class="o">=</span>/www/sentry/bin/sentry celery beat
-    <span class="nv">autostart</span><span class="o">=</span><span class="nb">true</span>
-<span class="nb">    </span><span class="nv">autorestart</span><span class="o">=</span><span class="nb">true</span>
-<span class="nb">    </span><span class="nv">redirect_stderr</span><span class="o">=</span><span class="nb">true</span>
-<span class="nb">    </span><span class="nv">killasgroup</span><span class="o">=</span><span class="nb">true</span>
+  <div class="entry-content"><p>The official OnePlus One does not show how to install OxygenOS on OnePlus One using Linux <span class="caps">OS</span>.
+So here is a summary on how to do it which take 15&nbsp;mn.</p>
+<p><strong>I believe you know what you are doing. Your data will be wiped out completely, so prepare a backup before doing any thing from this&nbsp;tutorial.</strong></p>
+<p>Download required files as indicated <a href="https://forums.oneplus.net/threads/oxygenos-2-1-4-for-the-oneplus-one.425544/">here</a> with instruction of Mac <span class="caps">OS</span> and <span class="caps">OPO2</span>.1.4_Patch_Mac.zip</p>
+<p>Install Android development tools (android adb and&nbsp;fastboot):</p>
+<div class="highlight"><pre>    sudo apt-get update
+    sudo apt-get install android-tools-adb android-tools-fastboot
 </pre></div>
 
 
-<ul>
-<li>Install and use <a href="https://www.rabbitmq.com/download.html">RabbitMQ</a> as broker instead of redis, specially if you have a large application which could lead
-to many logging, if you have a micro/small server, you can stick with&nbsp;Redis.</li>
-</ul></div>
+<p>Extract <span class="caps">OPO2</span>.1.4_Patch_Mac.zip and cd into&nbsp;it</p>
+<div class="highlight"><pre>  <span class="nb">cd </span>OPO2.1.4_Patch_Mac/  
+</pre></div>
+
+
+<p>Check Device&nbsp;Status:</p>
+<div class="highlight"><pre>  sudo fastboot devices
+</pre></div>
+
+
+<p>Unlock&nbsp;Bootloader:</p>
+<div class="highlight"><pre>  sudo fastboot oem unlock
+</pre></div>
+
+
+<p>Flash Oxygen Recovery and appsboot&nbsp;patch</p>
+<div class="highlight"><pre>  sudo fastboot flash recovery sys/recovery.img
+  sudo fastboot flash aboot sys/emmc_appsboot.mbn
+</pre></div>
+
+
+<p>Boot into&nbsp;Recovery</p>
+<div class="highlight"><pre>  sudo fastboot boot sys/recovery.img
+</pre></div>
+
+
+<p>If the system don&#8217;t go to recovery turn it of and press power+volumen down button&nbsp;again.</p>
+<p>Then you can either follow the Mac instructions items from 11 or Wipe the cache and data and use <span class="caps">USB</span> install from the recovery, then you have to run this command of course with your phone connected via usb to your&nbsp;laptop/pc:</p>
+<div class="highlight"><pre>  sudo adb sideload ../OnePlus_Bacon_OxygenOS_201601190107.zip
+</pre></div>
+
+
+<p>Just wait until the install is done and then reboot the phone.
+You have now successfully installed OxygenOS on your&nbsp;phone. </p>
+<p><a href="https://forums.oneplus.net/threads/installation-on-linux.425650/#post-14427789">Credits</a></p></div>
     <footer>
 <p class="meta">
   <span class="byline author vcard">
@@ -132,11 +143,11 @@ to many logging, if you have a micro/small server, you can stick with&nbsp;Redis
         Mounir Messelmeni
     </span>
   </span>
-<time datetime="2016-03-21T23:28:00+01:00" pubdate>Mon 21 March 2016</time>  <span class="categories">
-    <a class='category' href='../../../../category/web-development.html'>Web Development</a>
+<time datetime="2017-02-25T11:28:00+01:00" pubdate>Sat 25 February 2017</time>  <span class="categories">
+    <a class='category' href='../../../../category/android.html'>Android</a>
   </span>
   <span class="categories">
-    <a class="category" href="../../../../tag/django.html">Django</a>,    <a class="category" href="../../../../tag/python.html">Python</a>,    <a class="category" href="../../../../tag/logging.html">Logging</a>  </span>
+    <a class="category" href="../../../../tag/android.html">Android</a>  </span>
 </p><div class="sharing">
 </div>    </footer>
   </article>
@@ -204,9 +215,9 @@ to many logging, if you have a micro/small server, you can stick with&nbsp;Redis
   <script src="../../../../theme/js/octopress.js" type="text/javascript"></script>
 	<script type="text/javascript">
 	  var disqus_shortname = 'mounir-blog';
-          var disqus_identifier = '/2016/03/21/installing-and-using-sentry-on-your-django-projects/';
-          var disqus_url = 'http://mounirmesselmeni.github.io/2016/03/21/installing-and-using-sentry-on-your-django-projects/';
-          var disqus_title = 'Installing and using Sentry on your Django&nbsp;projects';
+          var disqus_identifier = '/2017/02/25/installing-oxygen-os-on-oneplus-one/';
+          var disqus_url = 'http://mounirmesselmeni.github.io/2017/02/25/installing-oxygen-os-on-oneplus-one/';
+          var disqus_title = 'Installing Oxygen <span class="caps">OS</span> on OnePlus&nbsp;One';
 	  (function() {
 	    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 	    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
